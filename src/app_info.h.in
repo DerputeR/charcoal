@@ -1,0 +1,9 @@
+#pragma once
+
+#include <string>
+
+const constexpr char* APP_FULL_NAME = "@APP_FULL_NAME@";
+const constexpr char* APP_VERSION = "@CMAKE_PROJECT_VERSION@";
+const constexpr char* APP_PACKAGE = "@APP_PACKAGE@";
+const constexpr char* APP_WINDOW_TITLE = "@APP_WINDOW_TITLE@";
+
