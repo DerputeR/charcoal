@@ -10,34 +10,22 @@
 #include <backends/imgui_impl_sdl3.h>
 #include <backends/imgui_impl_sdlrenderer3.h>
 
+#include "engine/time.h"
 #include "engine/shader_loader.h"
 
 #include "app_info.h"
+
+using namespace Charcoal;
 
 static SDL_Window* window;
 static SDL_Renderer* renderer; // for ease of drawing stuff until I can convert to pure opengl
 
 static Scene scene{};
 
-static const Uint64 ONE_SECOND_NS = 1000000000;
+static Engine::Time time;  
 
 static bool vsync_enabled = false;
 static bool vsync_adaptive = true;
-static Uint64 min_frame_time = ONE_SECOND_NS / 120;
-static Uint64 time_ns_last = 0;
-static Uint64 time_ns_now = 0;
-static Uint64 time_ns_delta = 0;
-
-static Uint64 frame_number = 0;
-
-static void update_frame_cap(Uint64 frame_cap) {
-    if (frame_cap == 0) {
-        min_frame_time = 0;
-    }
-    else {
-        min_frame_time = ONE_SECOND_NS / frame_cap;
-    }
-}
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
     SDL_SetAppMetadata(APP_FULL_NAME, APP_VERSION, APP_PACKAGE);
@@ -97,9 +85,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
 
 SDL_AppResult SDL_AppIterate(void* appstate) {
     // compute previous frame time
-    time_ns_last = time_ns_now;
-    time_ns_now = SDL_GetTicksNS();
-    time_ns_delta = time_ns_now - time_ns_last;
+    time.update(SDL_GetTicksNS());
 
     // manual framecap when vsync is off
     if ((!vsync_enabled || (vsync_enabled && vsync_adaptive)) && min_frame_time > 0) {
