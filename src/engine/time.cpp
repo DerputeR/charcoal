@@ -25,13 +25,16 @@ namespace Charcoal::Engine {
     }
 
     int64_t Time::get_fps_cap() {
-        if (min_frame_time = 0) {
+        if (min_frame_time == 0) {
             return 0;
         } else {
             return ONE_SECOND_NS / min_frame_time;
         }
     }
 
+    int64_t Time::get_min_frame_time_ns() {
+        return min_frame_time;
+    }
 
     int64_t Time::get_delta_ns() {
         return time_ns_delta;
@@ -42,6 +45,6 @@ namespace Charcoal::Engine {
     }
 
     double Time::ns_to_f64(int64_t ns) {
-        return static_cast<double>(ns) / static_cast<double>(Time::ONE_SECOND_NS)
+        return static_cast<double>(ns) / static_cast<double>(Time::ONE_SECOND_NS);
     }
 }
