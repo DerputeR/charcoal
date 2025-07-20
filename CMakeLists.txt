@@ -8,6 +8,9 @@ set(APP_PACKAGE "com.example.charcoal")
 set(APP_FULL_NAME "Charcoal Engine")
 set(APP_WINDOW_TITLE "Charcoal Engine")
 
+# Export compile commands for things like clangd
+set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
+
 configure_file("src/app_info.h.in" "${CMAKE_SOURCE_DIR}/src/app_info.h" @ONLY)
 
 # Dependency management, excluding SDL3 (special case handled below)
@@ -15,12 +18,12 @@ set(FETCHCONTENT_UPDATES_DISCONNECTED ON CACHE BOOL "If enabled, only fetch cont
 include(FetchContent)
 
 FetchContent_Declare(
-    imgui            
+    imgui
     GIT_REPOSITORY  https://github.com/ocornut/imgui
     GIT_TAG         v1.91.9b-docking
 )
 FetchContent_Declare(
-    glm            
+    glm
     GIT_REPOSITORY  https://github.com/g-truc/glm
     GIT_TAG         1.0.1
 )
@@ -91,10 +94,10 @@ add_executable(Charcoal    "src/main.cpp"
 
 # For debugging
 if (MSVC AND WIN32 AND NOT MSVC_VERSION VERSION_LESS 142)
-	target_link_options(Charcoal PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)
-	target_compile_options(Charcoal PRIVATE $<$<CONFIG:Debug>:/ZI>)
-	target_sources(Charcoal PRIVATE $<$<CONFIG:Debug>:${IMGUI_DEBUG}>)
-	target_compile_definitions(Charcoal PRIVATE $<$<CONFIG:Debug>:DEBUG>)
+    target_link_options(Charcoal PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)
+    target_compile_options(Charcoal PRIVATE $<$<CONFIG:Debug>:/ZI>)
+    target_sources(Charcoal PRIVATE $<$<CONFIG:Debug>:${IMGUI_DEBUG}>)
+    target_compile_definitions(Charcoal PRIVATE $<$<CONFIG:Debug>:DEBUG>)
 endif()
 
 # Link to the actual SDL3 library.
