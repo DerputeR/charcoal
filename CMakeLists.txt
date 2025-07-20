@@ -87,11 +87,11 @@ set(ENGINE_SOURCES "src/engine/shader_loader.cpp"
 # Create the executable target.
 # Since Dear ImGUI is not being built as a separate static library,
 # we'll need to include the sources here.
-add_executable(Charcoal    "src/main.cpp"
-                           "glad/src/glad.c"
-                           ${IMGUI_SOURCES}
-                           ${IMGUI_BACKEND_SOURCES}
-                           ${ENGINE_SOURCES}
+add_executable(Charcoal "src/main.cpp"
+                        "glad/src/glad.c"
+                        ${IMGUI_SOURCES}
+                        ${IMGUI_BACKEND_SOURCES}
+                        ${ENGINE_SOURCES}
 )
 
 # For debugging
