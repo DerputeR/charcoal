@@ -1,3 +1,4 @@
+#include "SDL3/SDL_timer.h"
 #include <iostream>
 #include <array>
 
@@ -20,9 +21,7 @@ using namespace Charcoal;
 static SDL_Window* window;
 static SDL_Renderer* renderer; // for ease of drawing stuff until I can convert to pure opengl
 
-static Scene scene{};
-
-static Engine::Time time;  
+static Engine::Time engine_time;
 
 static bool vsync_enabled = false;
 static bool vsync_adaptive = true;
@@ -85,20 +84,20 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
 
 SDL_AppResult SDL_AppIterate(void* appstate) {
     // compute previous frame time
-    time.update(SDL_GetTicksNS());
+    engine_time.update(SDL_GetTicksNS(), true);
 
     // manual framecap when vsync is off
+    auto min_frame_time = engine_time.get_min_frame_time_ns();
+    auto time_ns_delta = engine_time.get_delta_ns();
     if ((!vsync_enabled || (vsync_enabled && vsync_adaptive)) && min_frame_time > 0) {
-        
         if (time_ns_delta < min_frame_time) {
             SDL_DelayPrecise(min_frame_time - time_ns_delta);
-            time_ns_now = SDL_GetTicksNS();
-            time_ns_delta = time_ns_now - time_ns_last;
+            engine_time.update(SDL_GetTicksNS(), false);
         }
     }
 
     // update the scene
-    scene.update(time_ns_delta / static_cast<float>(ONE_SECOND_NS));
+    // TODO
 
     // clear the buffer    
     SDL_SetRenderDrawColor(renderer, 32, 32, 32, SDL_ALPHA_OPAQUE);
@@ -116,7 +115,6 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     // display the render
     SDL_RenderPresent(renderer);
 
-    frame_number++;
     return SDL_APP_CONTINUE;
 }
 
