@@ -64,8 +64,10 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
         }
     } else if (!SDL_SetRenderVSync(renderer, 0)) {
         SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Failed to disable vsync: %s", SDL_GetError());
+    } else {
+        engine_time.set_fps_cap(360);
     }
-    
+
     // Dear ImGUI init
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -83,6 +85,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
 }
 
 SDL_AppResult SDL_AppIterate(void* appstate) {
+    static bool demo_window_shown = true;
+
     // compute previous frame time
     engine_time.update(SDL_GetTicksNS(), true);
 
@@ -109,6 +113,7 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     ImGui_ImplSDLRenderer3_NewFrame();
     ImGui_ImplSDL3_NewFrame();
     ImGui::NewFrame();
+    ImGui::ShowDemoWindow(&demo_window_shown);
     ImGui::Render();
     ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer);
 
