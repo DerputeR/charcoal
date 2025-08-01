@@ -53,18 +53,21 @@ set(IMGUI_DEBUG "${imgui_SOURCE_DIR}/misc/debuggers/imgui.natvis"
 
 # * Linking SDL instructions are found in SDL/docs/README-cmake.md
 
-# This makes sure that the dynamic library goes into the build directory automatically.
+# This ensures that the dynamic lib goes into the build directory automatically.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>/lib")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>/lib/${PROJECT_NAME}")
 
-# Create an option to switch between a system sdl library and a vendored SDL library
+# Create an option to switch between a system SDL lib and a vendored one
 # If this variable exists in the cache, its value will not be overwritten
 option(MYGAME_VENDORED "Use vendored libraries" OFF)
-set(CMAKE_PREFIX_PATH "/usr/local" CACHE PATH "Custom prefix paths to search for libraries under")
+set(CMAKE_PREFIX_PATH "/usr/local" CACHE PATH
+    "Custom prefix paths to search for libraries under")
 
-# GLFW sets the variable BUILD_SHARED_LIBS to false before we hit SDL,
-# so we need to manually enable SDL_SHARED before we aquire SDL
+# Note: An older version of this CMakeLists.txt used GLFW as a dependency.
+# This is no longer the case, but it's not a bad idea to specify library mode.
+# Before, GLFW set the variable BUILD_SHARED_LIBS to false before we hit SDL,
+# so we needed to manually enable SDL_SHARED before acquiring SDL
 option(SDL_SHARED "Build a SDL shared library (if available)" ON)
 option(SDL_STATIC "Build a SDL static library (if available)" OFF)
 
