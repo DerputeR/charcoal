@@ -84,7 +84,6 @@ endif()
 
 # Engine sources
 set(ENGINE_SOURCES "src/engine/shader_loader.cpp"
-                   "src/engine/engine.cpp"
                    "src/engine/time.cpp")
 
 # Create the executable target.
