@@ -48,7 +48,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
     } else {
         float main_scale = SDL_GetDisplayContentScale(primary_display);
         if (main_scale == 0) {
-            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Unable to detect priamry display's DPI scale: %s\nDefaulting to normal DPI scaling", SDL_GetError());
+            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Unable to detect priamry display's scale: %s\nDefaulting to normal scaling", SDL_GetError());
             main_scale = 1.0f;
         }
     }
@@ -179,7 +179,7 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event *event) {
         return SDL_APP_SUCCESS;
     }
     if (event->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "Window DPI change detected. Automatic scaling update is not yet implemented.");
+        SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "Window scaling change detected. Automatic scaling update is not yet implemented.");
     }
 
     return SDL_APP_CONTINUE;
