@@ -1,6 +1,6 @@
 #include "time.h"
 
-namespace Charcoal::Engine {
+namespace Charcoal {
     void Time::set_fps_cap(int64_t fps_cap) {
         if (fps_cap == 0) {
             min_frame_time = 0;

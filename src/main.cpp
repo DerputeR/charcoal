@@ -1,4 +1,5 @@
 #include "SDL3/SDL_error.h"
+#include "SDL3/SDL_events.h"
 #include "SDL3/SDL_init.h"
 #include "SDL3/SDL_log.h"
 #include "SDL3/SDL_pixels.h"
@@ -20,16 +21,14 @@
 
 #include "app_info.h"
 
-using namespace Charcoal;
-
 static SDL_Window* window;
 static SDL_GLContext glCtx;
 
-static Engine::Time engine_time;
 static int fps_max = 400; // TODO: move to config
 
 static bool vsync_enabled = false;
 static bool vsync_adaptive = true;
+static Charcoal::Time engine_time;
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
     SDL_SetAppMetadata(APP_FULL_NAME, APP_VERSION, APP_PACKAGE);

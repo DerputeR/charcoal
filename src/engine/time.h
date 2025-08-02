@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-namespace Charcoal::Engine {
+namespace Charcoal {
     class Time {
         static constexpr int64_t ONE_SECOND_NS = 1000000000;
 
