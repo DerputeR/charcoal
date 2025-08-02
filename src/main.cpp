@@ -18,16 +18,15 @@
 
 #include "engine/time.h"
 #include "engine/shader_loader.h"
+#include "engine/config.h"
 
 #include "app_info.h"
 
 static SDL_Window* window;
 static SDL_GLContext glCtx;
+static float dpi_scaling = 1.0f;
 
-static int fps_max = 400; // TODO: move to config
-
-static bool vsync_enabled = false;
-static bool vsync_adaptive = true;
+static Charcoal::Config config;
 static Charcoal::Time engine_time;
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
@@ -42,7 +41,21 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
     }
 
     // Window init
-    window = SDL_CreateWindow(APP_WINDOW_TITLE, 1280, 720,
+    float dpi_scaling = 1.0f;
+    SDL_DisplayID primary_display = SDL_GetPrimaryDisplay();
+    if (primary_display == 0) {
+        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Unable to detect primary display: %s\nDefaulting to normal DPI scaling", SDL_GetError());
+    } else {
+        float main_scale = SDL_GetDisplayContentScale(primary_display);
+        if (main_scale == 0) {
+            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Unable to detect priamry display's DPI scale: %s\nDefaulting to normal DPI scaling", SDL_GetError());
+            main_scale = 1.0f;
+        }
+    }
+
+    window = SDL_CreateWindow(APP_WINDOW_TITLE,
+                              static_cast<int>(static_cast<float>(config.resolution.x) * dpi_scaling),
+                              static_cast<int>(static_cast<float>(config.resolution.y) * dpi_scaling),
                               SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_OPENGL);
     if (window == nullptr) {
         SDL_LogCritical(SDL_LOG_CATEGORY_VIDEO, "Failed to create window: %s", SDL_GetError());
@@ -60,8 +73,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
         return SDL_APP_FAILURE;
     }
 
-    if (vsync_enabled) {
-        if (vsync_adaptive) {
+    if (config.vsync_enabled) {
+        if (config.vsync_adaptive) {
             if (!SDL_GL_SetSwapInterval(-1)) {
                 SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Failed to enable adaptive vsync, retrying with normal vsync: %s", SDL_GetError());
                 if (!SDL_GL_SetSwapInterval(1)) {
@@ -74,7 +87,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
     } else if (!SDL_GL_SetSwapInterval(0)) {
         SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Failed to disable vsync: %s", SDL_GetError());
     } else {
-        engine_time.set_fps_cap(fps_max);
+        engine_time.set_fps_cap(config.fps_max);
     }
 
 
@@ -101,7 +114,17 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // IF using Docking Branch
+    // io.ConfigDpiScaleFonts = true; // this is marked as EXPERIMENTAL
+    // io.ConfigDpiScaleViewports = true; // this is marked as EXPERIMENTAL
     io.IniFilename = nullptr; // do not load from ini file. we can customize this later
+
+    // Styling
+    ImGui::StyleColorsDark(nullptr);
+
+    // Styling
+    ImGuiStyle& style = ImGui::GetStyle();
+    style.ScaleAllSizes(dpi_scaling);
+    style.FontScaleDpi = dpi_scaling;
 
     // Setup Platform/Renderer backends
     ImGui_ImplSDL3_InitForOpenGL(window, glCtx);
@@ -119,7 +142,7 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     // manual framecap when vsync is off
     auto min_frame_time = engine_time.get_min_frame_time_ns();
     auto time_ns_delta = engine_time.get_delta_ns();
-    if ((!vsync_enabled || (vsync_enabled && vsync_adaptive)) && min_frame_time > 0) {
+    if ((!config.vsync_enabled || (config.vsync_enabled && config.vsync_adaptive)) && min_frame_time > 0) {
         if (time_ns_delta < min_frame_time) {
             SDL_DelayPrecise(min_frame_time - time_ns_delta);
             engine_time.update(SDL_GetTicksNS(), false);
@@ -130,7 +153,7 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     // TODO
 
     // clear the buffer
-    glClearColor(32.0f/255.0f, 32.0f/255.0f, 32.0f/255.0f, SDL_ALPHA_OPAQUE_FLOAT);
+    glClearColor(config.clear_color.r, config.clear_color.g, config.clear_color.b, config.clear_color.a);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // draw the scene
@@ -151,10 +174,14 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 }
 
 SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event *event) {
+    ImGui_ImplSDL3_ProcessEvent(event);
     if (event->type == SDL_EVENT_QUIT) {
         return SDL_APP_SUCCESS;
     }
-    ImGui_ImplSDL3_ProcessEvent(event);
+    if (event->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
+        SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "Window DPI change detected. Automatic scaling update is not yet implemented.");
+    }
+
     return SDL_APP_CONTINUE;
 }
 
