@@ -61,6 +61,9 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
         SDL_LogCritical(SDL_LOG_CATEGORY_VIDEO, "Failed to create window: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
+    if (!SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED)) {
+        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Failed to set window position: %s", SDL_GetError());
+    }
 
     // OpenGL render context
     glCtx = SDL_GL_CreateContext(window);
