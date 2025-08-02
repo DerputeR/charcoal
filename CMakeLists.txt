@@ -42,7 +42,7 @@ set(IMGUI_SOURCES "${imgui_SOURCE_DIR}/imgui.cpp"
 
 # We will also need to do so for the backend sources
 set(IMGUI_BACKEND_SOURCES "${imgui_SOURCE_DIR}/backends/imgui_impl_sdl3.cpp"
-                          "${imgui_SOURCE_DIR}/backends/imgui_impl_sdlrenderer3.cpp"
+                          "${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp"
 )
 
 # This is recommended for debugging in VS
