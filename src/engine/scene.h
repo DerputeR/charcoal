@@ -2,6 +2,8 @@
 
 namespace Charcoal {
 class Scene {
-    void update(float delta_time);
+public:
+    virtual void update(float delta_time) = 0;
+    virtual ~Scene() = 0;
 };
 } // namespace Charcoal
