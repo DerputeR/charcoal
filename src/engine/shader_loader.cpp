@@ -1,13 +1,13 @@
 #include "shader_loader.h"
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <glad/glad.h>
-#include <errno.h>
 #include <SDL3/SDL_log.h>
+#include <errno.h>
+#include <fstream>
+#include <glad/glad.h>
+#include <iostream>
+#include <sstream>
 #include <vector>
 
-const GLchar* ShaderLoader::DEFAULT_VERT_SRC = R"(
+const GLchar *ShaderLoader::DEFAULT_VERT_SRC = R"(
 #version 330 core
 layout (location = 0) in vec3 pos;
 
@@ -16,7 +16,7 @@ void main() {
 }
 )";
 
-const GLchar* ShaderLoader::DEFAULT_FRAG_SRC = R"(
+const GLchar *ShaderLoader::DEFAULT_FRAG_SRC = R"(
 #version 330 core
 out vec4 FragColor;
 
@@ -25,20 +25,21 @@ void main() {
 } 
 )";
 
-const char* ShaderLoader::type_string(GLenum type) {
+const char *ShaderLoader::type_string(GLenum type) {
     switch (type) {
-    case GL_VERTEX_SHADER:
-        return "vertex shader";
-    case GL_FRAGMENT_SHADER:
-        return "fragment shader";
-    default:
-        return "unknown shader type";
+        case GL_VERTEX_SHADER:
+            return "vertex shader";
+        case GL_FRAGMENT_SHADER:
+            return "fragment shader";
+        default:
+            return "unknown shader type";
     }
 }
 
-GLuint ShaderLoader::compile(GLenum type, const GLchar* src) {
+GLuint ShaderLoader::compile(GLenum type, const GLchar *src) {
     GLuint id = glCreateShader(type);
-    glShaderSource(id, 1, &src, NULL); // returns a non-zero reference ID for the shader
+    glShaderSource(id, 1, &src,
+            NULL); // returns a non-zero reference ID for the shader
     glCompileShader(id);
 
     // check if compilation had any errors
@@ -50,7 +51,8 @@ GLuint ShaderLoader::compile(GLenum type, const GLchar* src) {
         std::vector<GLchar> msg(msgLen, 0);
 
         glGetShaderInfoLog(id, msgLen, &msgLen, &msg[0]);
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Failed to compile %s: %s", type_string(type), &msg[0]);
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Failed to compile %s: %s",
+                type_string(type), &msg[0]);
 
         // cleanup failed shader compile
         glDeleteShader(id);
@@ -61,14 +63,18 @@ GLuint ShaderLoader::compile(GLenum type, const GLchar* src) {
     return id;
 }
 
-GLuint ShaderLoader::create_program(const GLchar* vert_shader_src, const GLchar* frag_shader_src) {
+GLuint ShaderLoader::create_program(
+        const GLchar *vert_shader_src, const GLchar *frag_shader_src) {
     if (vert_shader_src == nullptr) {
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Cannot compile shader program with null vertex shader source.");
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Cannot compile shader program "
+                                             "with null vertex shader source.");
         return 0;
     }
 
     if (frag_shader_src == nullptr) {
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Cannot compile shader program with null fragment shader source.");
+        SDL_LogError(
+                SDL_LOG_CATEGORY_ERROR, "Cannot compile shader program with "
+                                        "null fragment shader source.");
         return 0;
     }
 
@@ -76,16 +82,17 @@ GLuint ShaderLoader::create_program(const GLchar* vert_shader_src, const GLchar*
 
     GLuint vs = compile(GL_VERTEX_SHADER, vert_shader_src);
     if (!vs) {
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Aborting shader program creation.");
+        SDL_LogError(
+                SDL_LOG_CATEGORY_ERROR, "Aborting shader program creation.");
         return 0;
     }
 
     GLuint fs = compile(GL_FRAGMENT_SHADER, frag_shader_src);
     if (!fs) {
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Aborting shader program creation.");
+        SDL_LogError(
+                SDL_LOG_CATEGORY_ERROR, "Aborting shader program creation.");
         return 0;
     }
-
 
     glAttachShader(program, vs);
     glAttachShader(program, fs);
@@ -100,7 +107,6 @@ GLuint ShaderLoader::create_program(const GLchar* vert_shader_src, const GLchar*
     glDeleteShader(vs);
     glDeleteShader(fs);
 
-
     // check if linking had errors
     GLint success;
     glGetProgramiv(program, GL_LINK_STATUS, &success);
@@ -110,7 +116,8 @@ GLuint ShaderLoader::create_program(const GLchar* vert_shader_src, const GLchar*
         std::vector<GLchar> msg(msgLen, 0);
 
         glGetProgramInfoLog(program, msgLen, &msgLen, &msg[0]);
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Shader program linking failed: %s", &msg[0]);
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR,
+                "Shader program linking failed: %s", &msg[0]);
 
         return 0;
     }
@@ -125,11 +132,11 @@ GLuint ShaderLoader::create_program(const GLchar* vert_shader_src, const GLchar*
         std::vector<GLchar> msg(msgLen, 0);
 
         glGetProgramInfoLog(program, msgLen, &msgLen, &msg[0]);
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Shader program validation failed: %s", &msg[0]);
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR,
+                "Shader program validation failed: %s", &msg[0]);
 
         return 0;
     }
-
 
     return program;
 }
