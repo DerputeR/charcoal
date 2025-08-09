@@ -1,12 +1,14 @@
-#include "SDL3/SDL_error.h"
-#include "SDL3/SDL_events.h"
-#include "SDL3/SDL_init.h"
-#include "SDL3/SDL_log.h"
-#include "SDL3/SDL_pixels.h"
-#include "SDL3/SDL_timer.h"
-#include "SDL3/SDL_video.h"
+#include <memory>
 
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_error.h>
+#include <SDL3/SDL_events.h>
+#include <SDL3/SDL_init.h>
+#include <SDL3/SDL_log.h>
+#include <SDL3/SDL_pixels.h>
+#include <SDL3/SDL_timer.h>
+#include <SDL3/SDL_video.h>
+
 #include <glad/glad.h>
 #define SDL_MAIN_USE_CALLBACKS
 #include <SDL3/SDL_main.h>
@@ -17,8 +19,11 @@
 #include <imgui_impl_sdl3.h>
 
 #include "engine/config.h"
+#include "engine/renderer.h"
 #include "engine/shader_loader.h"
 #include "engine/time.h"
+
+#include "scenes/triangle_scene.h"
 
 #include "app_info.h"
 
@@ -28,6 +33,9 @@ static float dpi_scaling = 1.0f;
 
 static Charcoal::Config config;
 static Charcoal::Time engine_time;
+static Charcoal::TriangleScene
+        triangle_scene; // todo: replace with proper scene loading system
+static std::unique_ptr<Charcoal::Renderer> renderer;
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     SDL_SetAppMetadata(APP_FULL_NAME, APP_VERSION, APP_PACKAGE);
@@ -122,14 +130,19 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
         return SDL_APP_FAILURE;
     }
 
-    // Test shader loader
-    GLuint default_program = ShaderLoader::create_program(
+    // Initialize default shader as a check
+    // TODO: do this in the renderer. maybe the renderer should be a simple
+    // object that we initialize in steps prior to use? seems like an
+    // antipattern but idk
+    GLuint default_shader_program = ShaderLoader::create_program(
             ShaderLoader::DEFAULT_VERT_SRC, ShaderLoader::DEFAULT_FRAG_SRC);
-    if (default_program == 0) {
+    if (default_shader_program == 0) {
         SDL_LogCritical(SDL_LOG_CATEGORY_VIDEO,
                 "Failed to create default shader program");
         return SDL_APP_FAILURE;
     }
+    // using a unique_ptr for now but might go back on this
+    renderer = std::make_unique<Charcoal::Renderer>(default_shader_program);
 
     // Dear ImGUI init
     IMGUI_CHECKVERSION();
@@ -184,7 +197,9 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     }
 
     // update the scene
-    // TODO
+    // TODO:: separate scene and renderer components
+    // Ideally we'd like to have the scene loaded at runtime dynamically
+    triangle_scene.update(engine_time.get_delta_ns());
 
     // clear the buffer
     glClearColor(config.clear_color.r, config.clear_color.g,
@@ -192,7 +207,11 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // draw the scene
-    // TODO
+    // TODO: submit draw calls/update buffers if they changed before this step
+    if (engine_time.get_frame_count() == 1) {
+        renderer->submit_verts(triangle_scene.get_verts());
+    }
+    renderer->render();
 
     // draw the GUI
     ImGui_ImplOpenGL3_NewFrame();

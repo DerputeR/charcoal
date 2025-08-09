@@ -1,6 +1,5 @@
 #pragma once
 #include <glad/glad.h>
-#include <string>
 
 class ShaderLoader {
     static const char *type_string(GLenum type);

@@ -1,10 +1,6 @@
 #include "shader_loader.h"
 #include <SDL3/SDL_log.h>
-#include <errno.h>
-#include <fstream>
 #include <glad/glad.h>
-#include <iostream>
-#include <sstream>
 #include <vector>
 
 const GLchar *ShaderLoader::DEFAULT_VERT_SRC = R"(
@@ -72,9 +68,9 @@ GLuint ShaderLoader::create_program(
     }
 
     if (frag_shader_src == nullptr) {
-        SDL_LogError(
-                SDL_LOG_CATEGORY_ERROR, "Cannot compile shader program with "
-                                        "null fragment shader source.");
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR,
+                "Cannot compile shader program with "
+                "null fragment shader source.");
         return 0;
     }
 

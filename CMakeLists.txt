@@ -84,7 +84,13 @@ endif()
 
 # Engine sources
 set(ENGINE_SOURCES "src/engine/shader_loader.cpp"
-                   "src/engine/time.cpp")
+                   "src/engine/time.cpp"
+                   "src/engine/scene.cpp"
+                   "src/engine/renderer.cpp"
+)
+
+# Scene sources. this is a WIP
+set(SCENE_SOURCES "src/scenes/triangle_scene.cpp")
 
 # Create the executable target.
 # Since Dear ImGUI is not being built as a separate static library,
@@ -94,6 +100,7 @@ add_executable(Charcoal "src/main.cpp"
                         ${IMGUI_SOURCES}
                         ${IMGUI_BACKEND_SOURCES}
                         ${ENGINE_SOURCES}
+                        ${SCENE_SOURCES}
 )
 
 # For debugging
