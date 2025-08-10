@@ -16,19 +16,28 @@ Renderer::Renderer() :
 }
 
 Renderer::Renderer(GLuint shader_program) :
-        shader_program{shader_program}, error{Error::none}, error_msg{""},
-        vbo{0}, vao{0}, vert_count{0} {
-    if (shader_program == 0) {
-        error = Error::invalid_program;
-        error_msg = "Invalid shader program loaded";
-    }
-
+        shader_program{0}, error{Error::none}, error_msg{""}, vbo{0}, vao{0},
+        vert_count{0}, position_index{-1} {
+    set_shader_program(shader_program);
     glGenBuffers(1, &vbo);
     glGenVertexArrays(1, &vao);
 }
 
+void Renderer::load_attribute_indices() {
+    if (shader_program == 0) {
+        position_index = -1;
+    } else {
+        position_index = glGetAttribLocation(shader_program, "pos");
+    }
+}
+
 void Renderer::set_shader_program(GLuint program) {
     shader_program = program;
+    if (shader_program == 0) {
+        error = Error::invalid_program;
+        error_msg = "Invalid shader program loaded";
+    }
+    load_attribute_indices();
 }
 
 void Renderer::submit_verts(const std::vector<Vertex> &verts) {
@@ -47,15 +56,14 @@ void Renderer::submit_verts(const std::vector<Vertex> &verts) {
         error_msg = std::format("VBO buffer size {} was expected to be size {}",
                 buf_size, expected_size);
         vert_count = 0;
-        glDisableVertexAttribArray(0);
+        glDisableVertexAttribArray(position_index);
     } else {
         vert_count = verts.size();
         // glVertexAttribPointer(
         //         0, 1, GL_FLOAT_VEC3, GL_FALSE, sizeof(Vertex), nullptr);
-        GLint position_index = glGetAttribLocation(shader_program, "pos");
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
                 reinterpret_cast<GLvoid *>(offsetof(Vertex, position)));
-        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(position_index);
     }
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);

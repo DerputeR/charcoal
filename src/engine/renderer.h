@@ -26,9 +26,12 @@ private:
     GLuint vao;
     GLuint shader_program;
     GLuint vert_count;
+    // TODO: map attributes dynamically, lookup per shader
+    GLint position_index;
     Error error;
     std::string error_msg;
     void set_error(Error e, const std::string &msg);
+    void load_attribute_indices();
 
 public:
     Renderer();
