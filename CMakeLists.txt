@@ -109,6 +109,9 @@ if (MSVC AND WIN32 AND NOT MSVC_VERSION VERSION_LESS 142)
     target_compile_options(Charcoal PRIVATE $<$<CONFIG:Debug>:/ZI>)
     target_sources(Charcoal PRIVATE $<$<CONFIG:Debug>:${IMGUI_DEBUG}>)
     target_compile_definitions(Charcoal PRIVATE $<$<CONFIG:Debug>:DEBUG>)
+elseif (CMAKE_BUILD_TYPE STREQUAL "Debug"
+        OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+    message("**Building Charcoal with build-type ${CMAKE_BUILD_TYPE}**")
 endif()
 
 # Link to the actual SDL3 library.
