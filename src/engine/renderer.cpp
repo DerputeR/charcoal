@@ -47,15 +47,15 @@ void Renderer::submit_verts(const std::vector<Vertex> &verts) {
         error_msg = std::format("VBO buffer size {} was expected to be size {}",
                 buf_size, expected_size);
         vert_count = 0;
-        glDisableVertexAttribArray(vao);
+        glDisableVertexAttribArray(0);
     } else {
         vert_count = verts.size();
         // glVertexAttribPointer(
         //         0, 1, GL_FLOAT_VEC3, GL_FALSE, sizeof(Vertex), nullptr);
-        GLint position_index = glGetAttribLocation(shader_program, "position");
+        GLint position_index = glGetAttribLocation(shader_program, "pos");
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
                 reinterpret_cast<GLvoid *>(offsetof(Vertex, position)));
-        glEnableVertexAttribArray(vao);
+        glEnableVertexAttribArray(0);
     }
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
