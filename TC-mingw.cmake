@@ -6,8 +6,8 @@ set(CMAKE_C_COMPILER   x86_64-w64-mingw32-gcc)
 set(CMAKE_CXX_COMPILER x86_64-w64-mingw32-g++)
 
 # static C++ and GCC runtimes
-set(CMAKE_CXX_FLAGS_INIT "-static-libstdc++ -static-libgcc")
-set(CMAKE_EXE_LINKER_FLAGS_INIT "-static-libstdc++ -static-libgcc")
+set(CMAKE_CXX_FLAGS_INIT "${CMAKE_CXX_FLAGS_INIT} -static-libstdc++ -static-libgcc")
+set(CMAKE_EXE_LINKER_FLAGS_INIT "${CMAKE_EXE_LINKER_FLAGS_INIT} -static-libstdc++ -static-libgcc")
 
 # where is the target environment located
 set(CMAKE_FIND_ROOT_PATH  /usr/bin/x86_64-w64-mingw32-gcc)
