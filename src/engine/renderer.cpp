@@ -31,7 +31,7 @@ Renderer::Renderer(GLuint shader_program) :
     //         0, 1, GL_FLOAT_VEC3, GL_FALSE, sizeof(Vertex), nullptr);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
             reinterpret_cast<GLvoid *>(offsetof(Vertex, position)));
-    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(vao);
 }
 
 void Renderer::set_shader_program(GLuint program) {
