@@ -16,7 +16,8 @@ Renderer::Renderer() :
 }
 
 Renderer::Renderer(GLuint shader_program) :
-        shader_program{shader_program}, error{Error::none} {
+        shader_program{shader_program}, error{Error::none}, error_msg{""},
+        vbo{0}, vao{0}, vert_count{0} {
     if (shader_program == 0) {
         error = Error::invalid_program;
         error_msg = "Invalid shader program loaded";
