@@ -1,7 +1,7 @@
 #pragma once
-#include <cstddef>
 #include <glad/glad.h>
 #include <glm/vec3.hpp>
+#include <string>
 #include <vector>
 
 namespace Charcoal {
@@ -13,10 +13,22 @@ struct Vertex {
 };
 
 class Renderer {
+public:
+    enum class Error {
+        none,
+        invalid_program,
+        invalid_vbo,
+        invalid_vao,
+    };
+
+private:
     GLuint vbo;
     GLuint vao;
     GLuint shader_program;
     GLuint vert_count;
+    Error error;
+    std::string error_msg;
+    void set_error(Error e, const std::string &msg);
 
 public:
     Renderer();
@@ -25,5 +37,8 @@ public:
     void set_shader_program(GLuint program);
     void submit_verts(const std::vector<Vertex> &verts);
     void render();
+    Error get_error() const;
+    void clear_error();
+    std::string get_error_msg() const;
 };
 } // namespace Charcoal

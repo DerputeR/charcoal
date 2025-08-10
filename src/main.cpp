@@ -143,6 +143,11 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     }
     // using a unique_ptr for now but might go back on this
     renderer = std::make_unique<Charcoal::Renderer>(default_shader_program);
+    if (renderer->get_error() != Charcoal::Renderer::Error::none) {
+        SDL_LogCritical(SDL_LOG_CATEGORY_RENDER, "%s",
+                renderer->get_error_msg().c_str());
+        return SDL_APP_FAILURE;
+    }
 
     // Dear ImGUI init
     IMGUI_CHECKVERSION();
@@ -210,6 +215,11 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     // TODO: submit draw calls/update buffers if they changed before this step
     if (engine_time.get_frame_count() == 1) {
         renderer->submit_verts(triangle_scene.get_verts());
+        if (renderer->get_error() != Charcoal::Renderer::Error::none) {
+            SDL_LogCritical(SDL_LOG_CATEGORY_RENDER, "%s",
+                    renderer->get_error_msg().c_str());
+            return SDL_APP_FAILURE;
+        }
     }
     renderer->render();
 

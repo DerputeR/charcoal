@@ -1,6 +1,7 @@
 #include "renderer.h"
 #include "shader_loader.h"
-#include <SDL3/SDL_log.h>
+#include <cstddef>
+#include <format>
 
 namespace Charcoal {
 Vertex::Vertex() : position{0.0f, 0.0f, 0.0f} {
@@ -14,10 +15,11 @@ Renderer::Renderer() :
                 ShaderLoader::DEFAULT_FRAG_SRC)) {
 }
 
-Renderer::Renderer(GLuint shader_program) : shader_program{shader_program} {
+Renderer::Renderer(GLuint shader_program) :
+        shader_program{shader_program}, error{Error::none} {
     if (shader_program == 0) {
-        SDL_LogCritical(
-                SDL_LOG_CATEGORY_VIDEO, "Invalid shader program loaded");
+        error = Error::invalid_program;
+        error_msg = "Invalid shader program loaded";
     }
 
     glGenBuffers(1, &vbo);
@@ -39,20 +41,51 @@ void Renderer::submit_verts(const std::vector<Vertex> &verts) {
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(Vertex), verts.data(),
             GL_STATIC_DRAW);
+
+    // check if the data was uploaded correctly
+    GLint buf_size{0};
+    std::size_t expected_size{verts.size() * sizeof(Vertex)};
+    glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &buf_size);
+    if (static_cast<std::size_t>(buf_size) != expected_size) {
+        error = Error::invalid_vbo;
+        error_msg = std::format("VBO buffer size {} was expected to be size {}",
+                buf_size, expected_size);
+        vert_count = 0;
+    } else {
+        vert_count = verts.size();
+    }
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    vert_count = verts.size();
 }
 
 void Renderer::render() {
-    glUseProgram(shader_program);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBindVertexArray(vao);
-    glDrawArrays(GL_TRIANGLES, 0, vert_count);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+    if (error == Error::none) {
+        glUseProgram(shader_program);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBindVertexArray(vao);
+        glDrawArrays(GL_TRIANGLES, 0, vert_count);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
 }
 
 Renderer::~Renderer() {
     glDeleteBuffers(1, &vbo);
+}
+
+Renderer::Error Renderer::get_error() const {
+    return error;
+}
+
+std::string Renderer::get_error_msg() const {
+    return error_msg;
+}
+
+void Renderer::set_error(Error e, const std::string &msg) {
+    error = e;
+    error_msg = msg;
+}
+
+void Renderer::clear_error() {
+    set_error(Error::none, "");
 }
 } // namespace Charcoal
