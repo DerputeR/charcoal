@@ -1,5 +1,4 @@
-mkdir -p build &&
-cd build &&
-cmake -G Ninja .. &&
-cmake --build .
-
+mkdir -p build/linux &&
+    cd build/linux &&
+    cmake -G Ninja ../.. &&
+    cmake --build .

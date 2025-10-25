@@ -104,14 +104,22 @@ add_executable(Charcoal "src/main.cpp"
 )
 
 # For debugging
+target_sources(Charcoal PRIVATE $<$<CONFIG:Debug>:${IMGUI_DEBUG}>)
+target_compile_definitions(Charcoal PRIVATE $<$<CONFIG:Debug>:DEBUG>)
 if (MSVC AND WIN32 AND NOT MSVC_VERSION VERSION_LESS 142)
     target_link_options(Charcoal PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)
     target_compile_options(Charcoal PRIVATE $<$<CONFIG:Debug>:/ZI>)
-    target_sources(Charcoal PRIVATE $<$<CONFIG:Debug>:${IMGUI_DEBUG}>)
-    target_compile_definitions(Charcoal PRIVATE $<$<CONFIG:Debug>:DEBUG>)
 elseif (CMAKE_BUILD_TYPE STREQUAL "Debug"
         OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-    message("**Building Charcoal with build-type ${CMAKE_BUILD_TYPE}**")
+    message("Charcoal: Building with build-type ${CMAKE_BUILD_TYPE}...")
+    if (MINGW)
+        message("Charcoal: **MINGW toolchain detected**")
+        # set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb -gdwarf-4")
+        # target_compile_options(Charcoal PRIVATE $<$<CONFIG:Debug>:"-g -ggdb -gdwarf-4">)
+        target_compile_options(Charcoal PRIVATE $<$<CONFIG:Debug>:-ggdb -gdwarf-4>)
+        get_target_property(flags Charcoal COMPILE_OPTIONS)
+        message(STATUS "Charcoal compile options: ${flags}")
+    endif()
 endif()
 
 # Link to the actual SDL3 library.

@@ -10,7 +10,7 @@ set(CMAKE_CXX_FLAGS_INIT "${CMAKE_CXX_FLAGS_INIT} -static-libstdc++ -static-libg
 set(CMAKE_EXE_LINKER_FLAGS_INIT "${CMAKE_EXE_LINKER_FLAGS_INIT} -static-libstdc++ -static-libgcc")
 
 # where is the target environment located
-set(CMAKE_FIND_ROOT_PATH  /usr/bin/x86_64-w64-mingw32-gcc)
+set(CMAKE_FIND_ROOT_PATH  /usr/bin/x86_64-w64-mingw32-g++)
 
 # adjust the default behavior of the FIND_XXX() commands:
 # search programs in the host environment
