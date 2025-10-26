@@ -17,6 +17,13 @@ This project _should_ work on a variety of other systems, but this has not been 
 # Installation
 
 This project uses CMake to build and install.
+There are some included build scripts to get started:
+
+1. `build.ps1` - Generates a Visual Studio solution (Windows)
+2. `build.sh` - Builds for Linux
+3. `build-mingw.sh` - Builds for Windows using mingw64 (cross compile for Windows from Linux)
+
+Alternatively, see below for manual build steps.
 
 ## Windows
 
