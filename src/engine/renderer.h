@@ -5,6 +5,12 @@
 #include <vector>
 
 namespace Charcoal {
+
+/**
+ * @class Vertex
+ * @brief Defines a Vertex, the base data structure to be submitted to shaders.
+ *
+ */
 struct Vertex {
     glm::vec3 position;
 
@@ -12,8 +18,16 @@ struct Vertex {
     Vertex(const glm::vec3 &position);
 };
 
+/**
+ * @class Renderer
+ * @brief A primitive renderer using OpenGL
+ *
+ */
 class Renderer {
 public:
+    /**
+     * @brief Enum class containing the types of errors the Renderer can have.
+     */
     enum class Error {
         none,
         invalid_program,

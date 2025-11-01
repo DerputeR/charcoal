@@ -2,6 +2,11 @@
 #include <cstdint>
 
 namespace Charcoal {
+/**
+ * @class Time
+ * @brief Helper class for keeping track of time.
+ *
+ */
 class Time {
     static constexpr int64_t ONE_SECOND_NS = 1000000000;
 
@@ -16,16 +21,63 @@ class Time {
     int64_t frame_count = 0;
 
 public:
+    /**
+     * @brief Sets the FPS cap, which in turn updates the reported minimum frame
+     * time.
+     *
+     * @param fps_cap Targetted maximum FPS. Values <= 0 means uncapped
+     * framerate.
+     */
     void set_fps_cap(int64_t fps_cap);
-    int64_t get_fps_cap();
-    void update(int64_t ns, bool new_frame);
-    int64_t get_frame_count();
-    int64_t get_min_frame_time_ns();
-    int64_t get_delta_ns();
-    /*float get_delta_f32();*/
-    /*double get_delta_f64();*/
 
+    /**
+     * @brief Triggers an update of this time instance, updating the frame count
+     * and the delta time calculation.
+     *
+     * @param ns The time that has passed, in nanoseconds, since the last
+     * update.
+     * @param new_frame If true, this update marks the beginning of a new frame.
+     */
+    void update(int64_t ns, bool new_frame);
+
+    /**
+     * @brief Gets the frame count this class has tracked so far.
+     *
+     * @return The frame count.
+     */
+    int64_t get_frame_count();
+
+    /**
+     * @brief Gets the minimum time, in nanoseconds, required to pass before the
+     * next frame should be rendered.
+     *
+     * @return The minimum frame time in nanoseconds
+     */
+    int64_t get_min_frame_time_ns();
+
+    /**
+     * @brief Gets the time that has passed since the last frame.
+     *
+     * @return The delta time in nanoseconds
+     */
+    int64_t get_delta_ns();
+
+    /**
+     * @brief Helper function to convert time in nanoseconds (as an integer) to
+     * time in seconds (as a float)
+     *
+     * @param ns Time in nanoseconds
+     * @return Time in seconds
+     */
     static float ns_to_f32(int64_t ns);
+
+    /**
+     * @brief Helper function to convert time in nanoseconds (as an integer) to
+     * time in seconds (as a double)
+     *
+     * @param ns Time in nanoseconds
+     * @return Time in seconds
+     */
     static double ns_to_f64(int64_t ns);
 };
 } // namespace Charcoal
