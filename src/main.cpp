@@ -214,7 +214,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     // draw the scene
     // TODO: submit draw calls/update buffers if they changed before this step
     if (engine_time.get_frame_count() == 1) {
-        renderer->submit_verts(triangle_scene.get_verts());
+        renderer->submit_mesh(triangle_scene.get_meshes()[0]);
         if (renderer->get_error() != Charcoal::Renderer::Error::none) {
             SDL_LogCritical(SDL_LOG_CATEGORY_RENDER, "%s",
                     renderer->get_error_msg().c_str());

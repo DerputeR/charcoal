@@ -8,7 +8,7 @@ void TriangleScene::update(float delta_time) {
     // TODO
 }
 
-const std::vector<Vertex> &TriangleScene::get_verts() const {
-    return verts;
+const std::vector<Mesh> &TriangleScene::get_meshes() const {
+    return meshes;
 }
 } // namespace Charcoal

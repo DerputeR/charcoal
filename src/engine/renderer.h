@@ -19,8 +19,20 @@ struct Vertex {
 };
 
 /**
+ * @class Mesh
+ * @brief Defines a Mesh, which is a collection of triangles defined by their
+ * vertices and the indices which dictate their usage.
+ *
+ */
+struct Mesh {
+    std::vector<Vertex> verts;
+    std::vector<int> indices;
+};
+
+/**
  * @class Renderer
- * @brief A primitive renderer using OpenGL
+ * @brief A primitive renderer using OpenGL.
+ *        This renderer only renders triangles using an EBO bound to a VAO.
  *
  */
 class Renderer {
@@ -33,13 +45,15 @@ public:
         invalid_program,
         invalid_vbo,
         invalid_vao,
+        invalid_ebo,
     };
 
 private:
     GLuint vbo;
+    GLuint ebo;
     GLuint vao;
     GLuint shader_program;
-    GLuint vert_count;
+    GLuint index_count;
     // TODO: map attributes dynamically, lookup per shader
     GLint position_index;
     Error error;
@@ -52,7 +66,7 @@ public:
     Renderer(GLuint shader_program);
     ~Renderer();
     void set_shader_program(GLuint program);
-    void submit_verts(const std::vector<Vertex> &verts);
+    void submit_mesh(const Mesh &mesh);
     void render();
     Error get_error() const;
     void clear_error();

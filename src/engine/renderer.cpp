@@ -17,10 +17,18 @@ Renderer::Renderer() :
 
 Renderer::Renderer(GLuint shader_program) :
         shader_program{0}, error{Error::none}, error_msg{""}, vbo{0}, vao{0},
-        vert_count{0}, position_index{-1} {
+        index_count{0}, position_index{-1} {
     set_shader_program(shader_program);
     glGenBuffers(1, &vbo);
     glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &ebo);
+
+    // face must be front and back. mode can be fill or wireframe
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+    // enable backface culling
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
 }
 
 void Renderer::load_attribute_indices() {
@@ -40,31 +48,50 @@ void Renderer::set_shader_program(GLuint program) {
     load_attribute_indices();
 }
 
-void Renderer::submit_verts(const std::vector<Vertex> &verts) {
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+void Renderer::submit_mesh(const Mesh &mesh) {
+    // bind the VAO so we can update its state
     glBindVertexArray(vao);
 
-    glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(Vertex), verts.data(),
-            GL_STATIC_DRAW);
+    // copy verts to the vbo
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, mesh.verts.size() * sizeof(Vertex),
+            mesh.verts.data(), GL_STATIC_DRAW);
 
     // check if the data was uploaded correctly
-    GLint buf_size{0};
-    std::size_t expected_size{verts.size() * sizeof(Vertex)};
+    GLint buf_size = 0;
+    std::size_t expected_size = mesh.verts.size() * sizeof(Vertex);
     glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &buf_size);
     if (static_cast<std::size_t>(buf_size) != expected_size) {
         error = Error::invalid_vbo;
         error_msg = std::format("VBO buffer size {} was expected to be size {}",
                 buf_size, expected_size);
-        vert_count = 0;
         glDisableVertexAttribArray(position_index);
     } else {
-        vert_count = verts.size();
         // glVertexAttribPointer(
         //         0, 1, GL_FLOAT_VEC3, GL_FALSE, sizeof(Vertex), nullptr);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
                 reinterpret_cast<GLvoid *>(offsetof(Vertex, position)));
         glEnableVertexAttribArray(position_index);
     }
+
+    // copy the indices to the ebo
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh.indices.size() * sizeof(int),
+            mesh.indices.data(), GL_STATIC_DRAW);
+
+    // check if the data was uploaded correctly
+    buf_size = 0;
+    expected_size = mesh.indices.size() * sizeof(int);
+    glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &buf_size);
+    if (static_cast<std::size_t>(buf_size) != expected_size) {
+        error = Error::invalid_ebo;
+        error_msg = std::format("EBO buffer size {} was expected to be size {}",
+                buf_size, expected_size);
+        index_count = 0;
+    } else {
+        index_count = mesh.indices.size();
+    }
+
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
@@ -72,10 +99,8 @@ void Renderer::submit_verts(const std::vector<Vertex> &verts) {
 void Renderer::render() {
     if (error == Error::none) {
         glUseProgram(shader_program);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, vert_count);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glDrawElements(GL_TRIANGLES, index_count, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
     }
 }
