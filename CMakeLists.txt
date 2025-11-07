@@ -4,14 +4,14 @@ project(Charcoal VERSION 0.1.0
                  DESCRIPTION "A terrible, inefficient, but custom-made game engine"
                  LANGUAGES C CXX)
 
-set(APP_PACKAGE "com.example.charcoal")
-set(APP_FULL_NAME "Charcoal Engine")
-set(APP_WINDOW_TITLE "Charcoal Engine")
-
 # Export compile commands for things like clangd
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
-configure_file("src/app_info.h.in" "${CMAKE_SOURCE_DIR}/src/app_info.h" @ONLY)
+# App versioning/title
+set(APP_PACKAGE "com.example.charcoal")
+set(APP_FULL_NAME "Charcoal Engine")
+set(APP_WINDOW_TITLE "Charcoal Engine")
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/app_info.h.in" "${CMAKE_CURRENT_SOURCE_DIR}/src/app_info.h" @ONLY)
 
 # Dependency management, excluding SDL3 (special case handled below)
 set(FETCHCONTENT_UPDATES_DISCONNECTED ON CACHE BOOL "If enabled, only fetch content the first time. Future runs will not attempt to redownload.")
@@ -83,20 +83,31 @@ else()
 endif()
 
 # Engine sources
-set(ENGINE_SOURCES "src/engine/shader_loader.cpp"
-                   "src/engine/time.cpp"
-                   "src/engine/scene.cpp"
-                   "src/engine/renderer.cpp"
+set(ENGINE_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/engine/shader_loader.cpp"
+                   "${CMAKE_CURRENT_SOURCE_DIR}/src/engine/time.cpp"
+                   "${CMAKE_CURRENT_SOURCE_DIR}/src/engine/scene.cpp"
+                   "${CMAKE_CURRENT_SOURCE_DIR}/src/engine/renderer.cpp"
 )
 
+# Shader sources
+set(SHADER_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/engine/shader/basic.vert.glsl"
+                   "${CMAKE_CURRENT_SOURCE_DIR}/src/engine/shader/basic.frag.glsl"
+)
+# track their changes
+
+# need to duplicate the source paths, no clean way to re-use afaik
+file(READ ${CMAKE_CURRENT_SOURCE_DIR}/src/engine/shader/basic.vert.glsl SHADER_SRC_VERT_BASIC)
+file(READ ${CMAKE_CURRENT_SOURCE_DIR}/src/engine/shader/basic.frag.glsl SHADER_SRC_FRAG_BASIC)
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/engine/shader_sources.h.in" "${CMAKE_CURRENT_SOURCE_DIR}/src/engine/shader_sources.h" @ONLY)
+
 # Scene sources. this is a WIP
-set(SCENE_SOURCES "src/scenes/triangle_scene.cpp")
+set(SCENE_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/scenes/triangle_scene.cpp")
 
 # Create the executable target.
 # Since Dear ImGUI is not being built as a separate static library,
 # we'll need to include the sources here.
-add_executable(Charcoal "src/main.cpp"
-                        "glad/src/glad.c"
+add_executable(Charcoal "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp"
+                        "${CMAKE_CURRENT_SOURCE_DIR}/glad/src/glad.c"
                         ${IMGUI_SOURCES}
                         ${IMGUI_BACKEND_SOURCES}
                         ${ENGINE_SOURCES}

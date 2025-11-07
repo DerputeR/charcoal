@@ -1,6 +1,7 @@
 #pragma once
 #include <glad/glad.h>
 
+namespace Charcoal::Shader {
 class ShaderLoader {
     static const char *type_string(GLenum type);
     static GLuint compile(GLenum type, const GLchar *source);
@@ -12,3 +13,4 @@ public:
     static const GLchar *DEFAULT_VERT_SRC;
     static const GLchar *DEFAULT_FRAG_SRC;
 };
+}

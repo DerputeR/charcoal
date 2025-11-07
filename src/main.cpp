@@ -135,8 +135,9 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     // TODO: do this in the renderer. maybe the renderer should be a simple
     // object that we initialize in steps prior to use? seems like an
     // antipattern but idk
-    GLuint default_shader_program = ShaderLoader::create_program(
-            ShaderLoader::DEFAULT_VERT_SRC, ShaderLoader::DEFAULT_FRAG_SRC);
+    GLuint default_shader_program = Charcoal::Shader::ShaderLoader::create_program(
+                    Charcoal::Shader::ShaderLoader::DEFAULT_VERT_SRC,
+                    Charcoal::Shader::ShaderLoader::DEFAULT_FRAG_SRC);
     if (default_shader_program == 0) {
         SDL_LogCritical(SDL_LOG_CATEGORY_VIDEO,
                 "Failed to create default shader program");

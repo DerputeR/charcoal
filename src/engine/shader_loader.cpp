@@ -1,25 +1,12 @@
 #include "shader_loader.h"
+#include "shader_sources.h"
 #include <SDL3/SDL_log.h>
 #include <glad/glad.h>
 #include <vector>
 
-const GLchar *ShaderLoader::DEFAULT_VERT_SRC = R"(
-#version 330 core
-layout (location = 0) in vec3 pos;
-
-void main() {
-    gl_Position = vec4(pos.x, pos.y, pos.z, 1.0);
-}
-)";
-
-const GLchar *ShaderLoader::DEFAULT_FRAG_SRC = R"(
-#version 330 core
-out vec4 FragColor;
-
-void main() {
-    FragColor = vec4(1.0, 0.5, 0.2, 1.0);
-} 
-)";
+namespace Charcoal::Shader {
+const GLchar *ShaderLoader::DEFAULT_VERT_SRC = Source::VERT_BASIC;
+const GLchar *ShaderLoader::DEFAULT_FRAG_SRC = Source::FRAG_BASIC;
 
 const char *ShaderLoader::type_string(GLenum type) {
     switch (type) {
@@ -135,4 +122,5 @@ GLuint ShaderLoader::create_program(
     }
 
     return program;
+}
 }

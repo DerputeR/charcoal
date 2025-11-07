@@ -11,8 +11,9 @@ Vertex::Vertex(const glm::vec3 &position) : position{position} {
 }
 
 Renderer::Renderer() :
-        Renderer(ShaderLoader::create_program(ShaderLoader::DEFAULT_VERT_SRC,
-                ShaderLoader::DEFAULT_FRAG_SRC)) {
+        Renderer(Shader::ShaderLoader::create_program(
+                Shader::ShaderLoader::DEFAULT_VERT_SRC,
+                Shader::ShaderLoader::DEFAULT_FRAG_SRC)) {
 }
 
 Renderer::Renderer(GLuint shader_program) :
