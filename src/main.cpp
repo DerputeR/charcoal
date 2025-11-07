@@ -29,7 +29,7 @@
 
 static SDL_Window *window;
 static SDL_GLContext glCtx;
-static float dpi_scaling = 1.0f;
+static float dpi_scaling;
 
 static Charcoal::Config config;
 static Charcoal::Time engine_time;
@@ -50,7 +50,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     }
 
     // Window init
-    float dpi_scaling = 1.0f;
+    dpi_scaling = 1.0f;
     SDL_DisplayID primary_display = SDL_GetPrimaryDisplay();
     if (primary_display == 0) {
         SDL_LogError(SDL_LOG_CATEGORY_VIDEO,
@@ -61,11 +61,12 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
         float main_scale = SDL_GetDisplayContentScale(primary_display);
         if (main_scale == 0) {
             SDL_LogError(SDL_LOG_CATEGORY_VIDEO,
-                    "Unable to detect priamry display's scale: %s\nDefaulting "
+                    "Unable to detect primary display's scale: %s\nDefaulting "
                     "to normal scaling",
                     SDL_GetError());
             main_scale = 1.0f;
         }
+        dpi_scaling = main_scale;
     }
 
     window = SDL_CreateWindow(APP_WINDOW_TITLE,
