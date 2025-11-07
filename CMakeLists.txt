@@ -83,31 +83,34 @@ else()
 endif()
 
 # Engine sources
-set(ENGINE_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/engine/shader_loader.cpp"
-                   "${CMAKE_CURRENT_SOURCE_DIR}/src/engine/time.cpp"
-                   "${CMAKE_CURRENT_SOURCE_DIR}/src/engine/scene.cpp"
-                   "${CMAKE_CURRENT_SOURCE_DIR}/src/engine/renderer.cpp"
+set(ENGINE_SOURCES "src/engine/shader_loader.cpp"
+                   "src/engine/time.cpp"
+                   "src/engine/scene.cpp"
+                   "src/engine/renderer.cpp"
 )
 
 # Shader sources
-set(SHADER_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/engine/shader/basic.vert.glsl"
-                   "${CMAKE_CURRENT_SOURCE_DIR}/src/engine/shader/basic.frag.glsl"
+set(SHADER_SOURCES "src/engine/shader/basic.vert.glsl"
+                   "src/engine/shader/basic.frag.glsl"
 )
 # track their changes
-
+set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+             APPEND
+             PROPERTY CMAKE_CONFIGURE_DEPENDS ${SHADER_SOURCES}
+)
 # need to duplicate the source paths, no clean way to re-use afaik
-file(READ ${CMAKE_CURRENT_SOURCE_DIR}/src/engine/shader/basic.vert.glsl SHADER_SRC_VERT_BASIC)
-file(READ ${CMAKE_CURRENT_SOURCE_DIR}/src/engine/shader/basic.frag.glsl SHADER_SRC_FRAG_BASIC)
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/engine/shader_sources.h.in" "${CMAKE_CURRENT_SOURCE_DIR}/src/engine/shader_sources.h" @ONLY)
+file(READ "src/engine/shader/basic.vert.glsl" SHADER_SRC_VERT_BASIC)
+file(READ "src/engine/shader/basic.frag.glsl" SHADER_SRC_FRAG_BASIC)
+configure_file("src/engine/shader_sources.h.in" "${CMAKE_CURRENT_SOURCE_DIR}/src/engine/shader_sources.h" @ONLY)
 
 # Scene sources. this is a WIP
-set(SCENE_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/scenes/triangle_scene.cpp")
+set(SCENE_SOURCES "src/scenes/triangle_scene.cpp")
 
 # Create the executable target.
 # Since Dear ImGUI is not being built as a separate static library,
 # we'll need to include the sources here.
-add_executable(Charcoal "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp"
-                        "${CMAKE_CURRENT_SOURCE_DIR}/glad/src/glad.c"
+add_executable(Charcoal "src/main.cpp"
+                        "glad/src/glad.c"
                         ${IMGUI_SOURCES}
                         ${IMGUI_BACKEND_SOURCES}
                         ${ENGINE_SOURCES}
