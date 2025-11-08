@@ -1,6 +1,6 @@
 #pragma once
-#include "engine/config.h"
-#include "engine/time.h"
+#include "config.h"
+#include "time.h"
 
 namespace Charcoal {
 struct AppState {

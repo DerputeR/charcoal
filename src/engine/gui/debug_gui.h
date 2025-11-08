@@ -1,8 +1,10 @@
 #pragma once
+#include "../app_state.h"
 
 namespace Charcoal::Gui {
 class DebugGui {
+    void draw_fps(bool *show);
 public:
-    void render();
+    void draw(AppState* app_state);
 };
 } // namespace Charcoal::Gui

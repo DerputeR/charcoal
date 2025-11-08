@@ -1,5 +1,5 @@
 #pragma once
-#include "../app_state.h"
+#include "app_state.h"
 #include <glad/glad.h>
 #include <glm/vec3.hpp>
 #include <string>

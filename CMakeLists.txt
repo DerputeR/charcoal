@@ -87,6 +87,7 @@ set(ENGINE_SOURCES "src/engine/shader_loader.cpp"
                    "src/engine/time.cpp"
                    "src/engine/scene.cpp"
                    "src/engine/renderer.cpp"
+                   "src/engine/gui/debug_gui.cpp"
 )
 
 # Shader sources

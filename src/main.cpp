@@ -22,11 +22,13 @@
 #include "engine/renderer.h"
 #include "engine/shader_loader.h"
 #include "engine/time.h"
+#include "engine/app_state.h"
+
+#include "engine/gui/debug_gui.h"
 
 #include "scenes/triangle_scene.h"
 
 #include "app_info.h"
-#include "app_state.h"
 
 static SDL_Window *window;
 static SDL_GLContext glCtx;
@@ -35,6 +37,7 @@ static float dpi_scaling;
 static Charcoal::AppState app_state;
 static Charcoal::TriangleScene
         triangle_scene; // todo: replace with proper scene loading system
+static Charcoal::Gui::DebugGui debug_gui;
 static std::unique_ptr<Charcoal::Renderer> renderer;
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
@@ -190,7 +193,6 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
 }
 
 SDL_AppResult SDL_AppIterate(void *appstate) {
-    static bool demo_window_shown = true;
     Charcoal::AppState *app_state =
             reinterpret_cast<Charcoal::AppState *>(appstate);
 
@@ -234,12 +236,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     renderer->render(app_state);
 
     // draw the GUI
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplSDL3_NewFrame();
-    ImGui::NewFrame();
-    ImGui::ShowDemoWindow(&demo_window_shown);
-    ImGui::Render();
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    debug_gui.draw(app_state);
 
     // display the render
     SDL_GL_SwapWindow(window);

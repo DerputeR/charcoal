@@ -4,6 +4,7 @@
 namespace Charcoal {
 // this is a stop-gap solution until I get around to implementing ConVars
 struct Config {
+    bool show_fps = true;
     int fps_max = 400;
     bool vsync_enabled = true;
     bool vsync_adaptive = false;
