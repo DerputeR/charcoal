@@ -1,4 +1,5 @@
 #pragma once
+#include "../app_state.h"
 #include <glad/glad.h>
 #include <glm/vec3.hpp>
 #include <string>
@@ -67,7 +68,7 @@ public:
     ~Renderer();
     void set_shader_program(GLuint program);
     void submit_mesh(const Mesh &mesh);
-    void render();
+    void render(AppState *app_state);
     Error get_error() const;
     void clear_error();
     std::string get_error_msg() const;

@@ -19,6 +19,7 @@ class Time {
     int64_t time_ns_delta = 0;
 
     int64_t frame_count = 0;
+    int64_t total_time = 0;
 
 public:
     /**
@@ -35,7 +36,7 @@ public:
      * and the delta time calculation.
      *
      * @param ns The time that has passed, in nanoseconds, since the last
-     * update.
+     * update. This is TOTAL time, NOT delta time.
      * @param new_frame If true, this update marks the beginning of a new frame.
      */
     void update(int64_t ns, bool new_frame);
@@ -45,7 +46,7 @@ public:
      *
      * @return The frame count.
      */
-    int64_t get_frame_count();
+    int64_t get_frame_count() const;
 
     /**
      * @brief Gets the minimum time, in nanoseconds, required to pass before the
@@ -53,14 +54,14 @@ public:
      *
      * @return The minimum frame time in nanoseconds
      */
-    int64_t get_min_frame_time_ns();
+    int64_t get_min_frame_time_ns() const;
 
     /**
      * @brief Gets the time that has passed since the last frame.
      *
      * @return The delta time in nanoseconds
      */
-    int64_t get_delta_ns();
+    int64_t get_delta_ns() const;
 
     /**
      * @brief Helper function to convert time in nanoseconds (as an integer) to
@@ -79,5 +80,12 @@ public:
      * @return Time in seconds
      */
     static double ns_to_f64(int64_t ns);
+
+    /**
+     * @brief Gets the total time that has been added so far.
+     *
+     * @return The total time in nanoseconds
+     */
+    int64_t get_total_time() const;
 };
 } // namespace Charcoal

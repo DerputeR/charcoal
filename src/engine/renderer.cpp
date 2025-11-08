@@ -1,5 +1,7 @@
 #include "renderer.h"
+#include "../app_state.h"
 #include "shader_loader.h"
+#include <cmath>
 #include <cstddef>
 #include <format>
 
@@ -97,9 +99,22 @@ void Renderer::submit_mesh(const Mesh &mesh) {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void Renderer::render() {
+void Renderer::render(AppState *app_state) {
     if (error == Error::none) {
         glUseProgram(shader_program);
+        if (app_state != nullptr) {
+            // TODO: abstract uniform updating. might need a separate shader
+            // program class to define this behavior
+            float time_value =
+                    app_state->time.ns_to_f32(app_state->time.get_total_time());
+            float green_value = (std::sin(time_value) / 2.0f) + 0.5f;
+            int vertex_color_location =
+                    glGetUniformLocation(shader_program, "our_color");
+            if (vertex_color_location > -1) {
+                glUniform4f(
+                        vertex_color_location, 0.0f, green_value, 0.0f, 1.0f);
+            }
+        }
         glBindVertexArray(vao);
         glDrawElements(GL_TRIANGLES, index_count, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);

@@ -26,13 +26,13 @@
 #include "scenes/triangle_scene.h"
 
 #include "app_info.h"
+#include "app_state.h"
 
 static SDL_Window *window;
 static SDL_GLContext glCtx;
 static float dpi_scaling;
 
-static Charcoal::Config config;
-static Charcoal::Time engine_time;
+static Charcoal::AppState app_state;
 static Charcoal::TriangleScene
         triangle_scene; // todo: replace with proper scene loading system
 static std::unique_ptr<Charcoal::Renderer> renderer;
@@ -48,6 +48,9 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
                 SDL_GetError());
         return SDL_APP_FAILURE;
     }
+
+    // Appstate init
+    *appstate = &app_state;
 
     // Window init
     dpi_scaling = 1.0f;
@@ -70,10 +73,10 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     }
 
     window = SDL_CreateWindow(APP_WINDOW_TITLE,
-            static_cast<int>(
-                    static_cast<float>(config.resolution.x) * dpi_scaling),
-            static_cast<int>(
-                    static_cast<float>(config.resolution.y) * dpi_scaling),
+            static_cast<int>(static_cast<float>(app_state.config.resolution.x) *
+                             dpi_scaling),
+            static_cast<int>(static_cast<float>(app_state.config.resolution.y) *
+                             dpi_scaling),
             SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY |
                     SDL_WINDOW_OPENGL);
     if (window == nullptr) {
@@ -102,8 +105,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
         return SDL_APP_FAILURE;
     }
 
-    if (config.vsync_enabled) {
-        if (config.vsync_adaptive) {
+    if (app_state.config.vsync_enabled) {
+        if (app_state.config.vsync_adaptive) {
             if (!SDL_GL_SetSwapInterval(-1)) {
                 SDL_LogError(SDL_LOG_CATEGORY_VIDEO,
                         "Failed to enable adaptive vsync, retrying with normal "
@@ -122,7 +125,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
         SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Failed to disable vsync: %s",
                 SDL_GetError());
     } else {
-        engine_time.set_fps_cap(config.fps_max);
+        app_state.time.set_fps_cap(app_state.config.fps_max);
     }
 
     // GLAD init
@@ -135,7 +138,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     // TODO: do this in the renderer. maybe the renderer should be a simple
     // object that we initialize in steps prior to use? seems like an
     // antipattern but idk
-    GLuint default_shader_program = Charcoal::Shader::ShaderLoader::create_program(
+    GLuint default_shader_program =
+            Charcoal::Shader::ShaderLoader::create_program(
                     Charcoal::Shader::ShaderLoader::DEFAULT_VERT_SRC,
                     Charcoal::Shader::ShaderLoader::DEFAULT_FRAG_SRC);
     if (default_shader_program == 0) {
@@ -187,35 +191,39 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
 
 SDL_AppResult SDL_AppIterate(void *appstate) {
     static bool demo_window_shown = true;
+    Charcoal::AppState *app_state =
+            reinterpret_cast<Charcoal::AppState *>(appstate);
 
     // compute previous frame time
-    engine_time.update(SDL_GetTicksNS(), true);
+    app_state->time.update(SDL_GetTicksNS(), true);
 
     // manual framecap when vsync is off
-    auto min_frame_time = engine_time.get_min_frame_time_ns();
-    auto time_ns_delta = engine_time.get_delta_ns();
-    if ((!config.vsync_enabled ||
-                (config.vsync_enabled && config.vsync_adaptive)) &&
+    auto min_frame_time = app_state->time.get_min_frame_time_ns();
+    auto time_ns_delta = app_state->time.get_delta_ns();
+    if ((!app_state->config.vsync_enabled ||
+                (app_state->config.vsync_enabled &&
+                        app_state->config.vsync_adaptive)) &&
             min_frame_time > 0) {
         if (time_ns_delta < min_frame_time) {
             SDL_DelayPrecise(min_frame_time - time_ns_delta);
-            engine_time.update(SDL_GetTicksNS(), false);
+            app_state->time.update(SDL_GetTicksNS(), false);
         }
     }
 
     // update the scene
     // TODO:: separate scene and renderer components
     // Ideally we'd like to have the scene loaded at runtime dynamically
-    triangle_scene.update(engine_time.get_delta_ns());
+    triangle_scene.update(app_state->time.get_delta_ns());
 
     // clear the buffer
-    glClearColor(config.clear_color.r, config.clear_color.g,
-            config.clear_color.b, config.clear_color.a);
+    glClearColor(app_state->config.clear_color.r,
+            app_state->config.clear_color.g, app_state->config.clear_color.b,
+            app_state->config.clear_color.a);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // draw the scene
     // TODO: submit draw calls/update buffers if they changed before this step
-    if (engine_time.get_frame_count() == 1) {
+    if (app_state->time.get_frame_count() == 1) {
         renderer->submit_mesh(triangle_scene.get_meshes()[0]);
         if (renderer->get_error() != Charcoal::Renderer::Error::none) {
             SDL_LogCritical(SDL_LOG_CATEGORY_RENDER, "%s",
@@ -223,7 +231,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
             return SDL_APP_FAILURE;
         }
     }
-    renderer->render();
+    renderer->render(app_state);
 
     // draw the GUI
     ImGui_ImplOpenGL3_NewFrame();
