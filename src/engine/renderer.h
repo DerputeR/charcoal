@@ -14,9 +14,19 @@ namespace Charcoal {
  */
 struct Vertex {
     glm::vec3 position;
+    glm::vec3 rgb; // todo: convert this into a single int, which can store rgb in hex
 
     Vertex();
     Vertex(const glm::vec3 &position);
+    Vertex(const glm::vec3 &position, const glm::vec3 &rgb);
+
+    /**
+     * @brief Helper class to set vertex color using integer RGB representation
+     * @param r Clamped to [0, 255]
+     * @param g Clamped to [0, 255]
+     * @param b Clamped to [0, 255]
+     */
+    void set_rgb(int r, int g, int b);
 };
 
 /**
@@ -57,6 +67,7 @@ private:
     GLuint index_count;
     // TODO: map attributes dynamically, lookup per shader
     GLint position_index;
+    GLint rgb_index;
     Error error;
     std::string error_msg;
     void set_error(Error e, const std::string &msg);

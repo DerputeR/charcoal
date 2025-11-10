@@ -3,12 +3,23 @@
 #include <cmath>
 #include <cstddef>
 #include <format>
+#include <algorithm>
 
 namespace Charcoal {
-Vertex::Vertex() : position{0.0f, 0.0f, 0.0f} {
+Vertex::Vertex() : position{0.0f, 0.0f, 0.0f}, rgb{1.0f, 1.0f, 1.0f} {
 }
 
-Vertex::Vertex(const glm::vec3 &position) : position{position} {
+Vertex::Vertex(const glm::vec3 &position) :
+        position{position}, rgb{1.0f, 1.0f, 1.0f} {
+}
+
+Vertex::Vertex(const glm::vec3 &position, const glm::vec3 &rgb) : position {position}, rgb {rgb} {
+}
+
+void Vertex::set_rgb(int r, int g, int b) {
+    rgb.x = std::clamp(r, 0, 255) / 255.0f;
+    rgb.y = std::clamp(g, 0, 255) / 255.0f;
+    rgb.z = std::clamp(b, 0, 255) / 255.0f;
 }
 
 Renderer::Renderer() :
@@ -36,8 +47,10 @@ Renderer::Renderer(GLuint shader_program) :
 void Renderer::load_attribute_indices() {
     if (shader_program == 0) {
         position_index = -1;
+        rgb_index = -1;
     } else {
         position_index = glGetAttribLocation(shader_program, "pos");
+        rgb_index = glGetAttribLocation(shader_program, "rgb");
     }
 }
 
@@ -68,12 +81,15 @@ void Renderer::submit_mesh(const Mesh &mesh) {
         error_msg = std::format("VBO buffer size {} was expected to be size {}",
                 buf_size, expected_size);
         glDisableVertexAttribArray(position_index);
+        glDisableVertexAttribArray(rgb_index);
     } else {
-        // glVertexAttribPointer(
-        //         0, 1, GL_FLOAT_VEC3, GL_FALSE, sizeof(Vertex), nullptr);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+        // attrib index, attrib element count, attrib element type, normalized, size of vertex (stride), attrib offset within vertex
+        glVertexAttribPointer(position_index, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
                 reinterpret_cast<GLvoid *>(offsetof(Vertex, position)));
+        glVertexAttribPointer(rgb_index, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                reinterpret_cast<GLvoid *>(offsetof(Vertex, rgb)));
         glEnableVertexAttribArray(position_index);
+        glEnableVertexAttribArray(rgb_index);
     }
 
     // copy the indices to the ebo
