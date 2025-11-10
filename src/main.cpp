@@ -18,27 +18,25 @@
 #include <imgui_impl_opengl3.h>
 #include <imgui_impl_sdl3.h>
 
+#include "engine/window_utils.h"
 #include "engine/config.h"
 #include "engine/renderer.h"
 #include "engine/shader_loader.h"
 #include "engine/time.h"
 #include "engine/app_state.h"
-
 #include "engine/gui/debug_gui.h"
 
 #include "scenes/triangle_scene.h"
 
 #include "app_info.h"
 
-static SDL_Window *window;
-static SDL_GLContext glCtx;
-static float dpi_scaling;
 
-static Charcoal::AppState app_state;
 static Charcoal::TriangleScene
-        triangle_scene; // todo: replace with proper scene loading system
+        triangle_scene; // todo: replace with proper scene loading system. also probably don't want this living on the stack
 static Charcoal::Gui::DebugGui debug_gui;
 static std::unique_ptr<Charcoal::Renderer> renderer;
+static SDL_Window *window;
+static SDL_GLContext gl_context;
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     SDL_SetAppMetadata(APP_FULL_NAME, APP_VERSION, APP_PACKAGE);
@@ -53,10 +51,11 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     }
 
     // Appstate init
-    *appstate = &app_state;
+    Charcoal::AppState *app_state = new Charcoal::AppState();
+    *appstate = app_state;
 
     // Window init
-    dpi_scaling = 1.0f;
+    app_state->config.dpi_scaling = 1.0f;
     SDL_DisplayID primary_display = SDL_GetPrimaryDisplay();
     if (primary_display == 0) {
         SDL_LogError(SDL_LOG_CATEGORY_VIDEO,
@@ -72,14 +71,14 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
                     SDL_GetError());
             main_scale = 1.0f;
         }
-        dpi_scaling = main_scale;
+        app_state->config.dpi_scaling = main_scale;
     }
 
     window = SDL_CreateWindow(APP_WINDOW_TITLE,
-            static_cast<int>(static_cast<float>(app_state.config.resolution.x) *
-                             dpi_scaling),
-            static_cast<int>(static_cast<float>(app_state.config.resolution.y) *
-                             dpi_scaling),
+            static_cast<int>(static_cast<float>(app_state->config.resolution.x) *
+                             app_state->config.dpi_scaling),
+            static_cast<int>(static_cast<float>(app_state->config.resolution.y) *
+                             app_state->config.dpi_scaling),
             SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY |
                     SDL_WINDOW_OPENGL);
     if (window == nullptr) {
@@ -94,22 +93,22 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     }
 
     // OpenGL render context
-    glCtx = SDL_GL_CreateContext(window);
-    if (glCtx == nullptr) {
+    gl_context = SDL_GL_CreateContext(window);
+    if (gl_context == nullptr) {
         SDL_LogCritical(SDL_LOG_CATEGORY_VIDEO,
                 "Failed to create OpenGL context for window: %s",
                 SDL_GetError());
         return SDL_APP_FAILURE;
     }
-    if (!SDL_GL_MakeCurrent(window, glCtx)) {
+    if (!SDL_GL_MakeCurrent(window, gl_context)) {
         SDL_LogCritical(SDL_LOG_CATEGORY_VIDEO,
                 "Failed to set context as current for window: %s",
                 SDL_GetError());
         return SDL_APP_FAILURE;
     }
 
-    if (app_state.config.vsync_enabled) {
-        if (app_state.config.vsync_adaptive) {
+    if (app_state->config.vsync_enabled) {
+        if (app_state->config.vsync_adaptive) {
             if (!SDL_GL_SetSwapInterval(-1)) {
                 SDL_LogError(SDL_LOG_CATEGORY_VIDEO,
                         "Failed to enable adaptive vsync, retrying with normal "
@@ -128,7 +127,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
         SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Failed to disable vsync: %s",
                 SDL_GetError());
     } else {
-        app_state.time.set_fps_cap(app_state.config.fps_max);
+        app_state->time.set_fps_cap(app_state->config.fps_max);
     }
 
     // GLAD init
@@ -171,8 +170,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     io.ConfigFlags |=
             ImGuiConfigFlags_NavEnableGamepad;        // Enable Gamepad Controls
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; // IF using Docking Branch
-    // io.ConfigDpiScaleFonts = true; // this is marked as EXPERIMENTAL
-    // io.ConfigDpiScaleViewports = true; // this is marked as EXPERIMENTAL
+     //io.ConfigDpiScaleFonts = true; // this is marked as EXPERIMENTAL
+     //io.ConfigDpiScaleViewports = true; // this is marked as EXPERIMENTAL
     io.IniFilename =
             nullptr; // do not load from ini file. we can customize this later
 
@@ -181,11 +180,11 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
 
     // Styling
     ImGuiStyle &style = ImGui::GetStyle();
-    style.ScaleAllSizes(dpi_scaling);
-    style.FontScaleDpi = dpi_scaling;
+    style.ScaleAllSizes(app_state->config.dpi_scaling);
+    style.FontScaleDpi = app_state->config.dpi_scaling;
 
     // Setup Platform/Renderer backends
-    ImGui_ImplSDL3_InitForOpenGL(window, glCtx);
+    ImGui_ImplSDL3_InitForOpenGL(window, gl_context);
     ImGui_ImplOpenGL3_Init(
             "#version 330 core"); // glad was configured to use 3.3 core
 
@@ -245,20 +244,33 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
 }
 
 SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
+    Charcoal::AppState *app_state =
+            reinterpret_cast<Charcoal::AppState *>(appstate);
     ImGui_ImplSDL3_ProcessEvent(event);
-    if (event->type == SDL_EVENT_QUIT) {
-        return SDL_APP_SUCCESS;
+    switch (event->type) {
+        case SDL_EVENT_QUIT: {
+            return SDL_APP_SUCCESS;
+        }
+        //case SDL_EVENT_WINDOW_RESIZED: {
+        //    SDL_WindowEvent *window_event =
+        //            reinterpret_cast<SDL_WindowEvent *>(event);
+        //    SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "normal resize event: %d x %d", window_event->data1, window_event->data2);
+        //    break;
+        //}
+        case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED: {
+            SDL_WindowEvent *window_event =
+                    reinterpret_cast<SDL_WindowEvent *>(event);
+            SDL_Window *window = SDL_GetWindowFromID(window_event->windowID);
+            Charcoal::handle_window_rescale(window, app_state, window_event->data1, window_event->data2);
+            break;
+        }
+        // TODO: rescale on display change
     }
-    if (event->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO,
-                "Window scaling change detected. Automatic scaling update is "
-                "not yet implemented.");
-    }
-
     return SDL_APP_CONTINUE;
 }
 
 void SDL_AppQuit(void *appstate, SDL_AppResult result) {
+    delete appstate;
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL3_Shutdown();
     ImGui::DestroyContext();

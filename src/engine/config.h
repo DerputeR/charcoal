@@ -11,5 +11,6 @@ struct Config {
     SDL_FColor clear_color{
             32.0f / 255.0f, 32.0f / 255.0f, 32.0f / 255.0f, 1.0f};
     glm::uvec2 resolution{1280, 720};
+    float dpi_scaling = 1.0f;
 };
 } // namespace Charcoal
