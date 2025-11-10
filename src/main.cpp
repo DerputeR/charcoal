@@ -18,21 +18,21 @@
 #include <imgui_impl_opengl3.h>
 #include <imgui_impl_sdl3.h>
 
-#include "engine/window_utils.h"
+#include "engine/app_state.h"
 #include "engine/config.h"
+#include "engine/gui/debug_gui.h"
 #include "engine/renderer.h"
 #include "engine/shader_loader.h"
 #include "engine/time.h"
-#include "engine/app_state.h"
-#include "engine/gui/debug_gui.h"
+#include "engine/window_utils.h"
 
 #include "scenes/triangle_scene.h"
 
 #include "app_info.h"
 
-
 static Charcoal::TriangleScene
-        triangle_scene; // todo: replace with proper scene loading system. also probably don't want this living on the stack
+        triangle_scene; // todo: replace with proper scene loading system. also
+                        // probably don't want this living on the stack
 static Charcoal::Gui::DebugGui debug_gui;
 static std::unique_ptr<Charcoal::Renderer> renderer;
 static SDL_Window *window;
@@ -75,10 +75,12 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     }
 
     window = SDL_CreateWindow(APP_WINDOW_TITLE,
-            static_cast<int>(static_cast<float>(app_state->config.resolution.x) *
-                             app_state->config.dpi_scaling),
-            static_cast<int>(static_cast<float>(app_state->config.resolution.y) *
-                             app_state->config.dpi_scaling),
+            static_cast<int>(
+                    static_cast<float>(app_state->config.resolution.x) *
+                    app_state->config.dpi_scaling),
+            static_cast<int>(
+                    static_cast<float>(app_state->config.resolution.y) *
+                    app_state->config.dpi_scaling),
             SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY |
                     SDL_WINDOW_OPENGL);
     if (window == nullptr) {
@@ -168,10 +170,14 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     io.ConfigFlags |=
             ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
     io.ConfigFlags |=
-            ImGuiConfigFlags_NavEnableGamepad;        // Enable Gamepad Controls
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; // IF using Docking Branch
-     //io.ConfigDpiScaleFonts = true; // this is marked as EXPERIMENTAL
-     //io.ConfigDpiScaleViewports = true; // this is marked as EXPERIMENTAL
+            ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
+    io.ConfigFlags |=
+            ImGuiConfigFlags_DockingEnable; // IF using Docking Branch
+                                            // io.ConfigDpiScaleFonts = true; //
+                                            // this is marked as EXPERIMENTAL
+                                            // io.ConfigDpiScaleViewports =
+                                            // true; // this is marked as
+                                            // EXPERIMENTAL
     io.IniFilename =
             nullptr; // do not load from ini file. we can customize this later
 
@@ -251,26 +257,29 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
         case SDL_EVENT_QUIT: {
             return SDL_APP_SUCCESS;
         }
-        //case SDL_EVENT_WINDOW_RESIZED: {
-        //    SDL_WindowEvent *window_event =
-        //            reinterpret_cast<SDL_WindowEvent *>(event);
-        //    SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "normal resize event: %d x %d", window_event->data1, window_event->data2);
-        //    break;
-        //}
+        // case SDL_EVENT_WINDOW_RESIZED: {
+        //     SDL_WindowEvent *window_event =
+        //             reinterpret_cast<SDL_WindowEvent *>(event);
+        //     SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "normal resize event: %d x
+        //     %d", window_event->data1, window_event->data2); break;
+        // }
         case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED: {
             SDL_WindowEvent *window_event =
                     reinterpret_cast<SDL_WindowEvent *>(event);
             SDL_Window *window = SDL_GetWindowFromID(window_event->windowID);
-            Charcoal::handle_window_rescale(window, app_state, window_event->data1, window_event->data2);
+            Charcoal::handle_window_rescale(window, app_state,
+                    window_event->data1, window_event->data2);
             break;
         }
-        // TODO: rescale on display change
+            // TODO: rescale on display change
     }
     return SDL_APP_CONTINUE;
 }
 
 void SDL_AppQuit(void *appstate, SDL_AppResult result) {
-    delete appstate;
+    Charcoal::AppState *app_state =
+            reinterpret_cast<Charcoal::AppState *>(appstate);
+    delete app_state;
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL3_Shutdown();
     ImGui::DestroyContext();
