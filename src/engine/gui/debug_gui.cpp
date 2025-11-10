@@ -23,6 +23,8 @@ void DebugGui::draw_fps(bool *show) {
             ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoBackground |
             ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoMove |
             ImGuiWindowFlags_NoDecoration;
+    ImGui::SetNextWindowPos(ImVec2{ImGui::GetMainViewport()->WorkSize.x, 0.0f},
+            ImGuiCond_None, ImVec2{1.0f, 0.0f});
     if (ImGui::Begin("debug_fps", show, flags)) {
         ImGuiIO &io = ImGui::GetIO();
 
