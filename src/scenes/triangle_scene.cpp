@@ -4,7 +4,7 @@ namespace Charcoal {
 TriangleScene::~TriangleScene() {
 }
 
-void TriangleScene::update(float delta_time) {
+void TriangleScene::update(const Time &time) {
     // TODO
 }
 

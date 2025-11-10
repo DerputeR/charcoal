@@ -1,9 +1,9 @@
 #include "renderer.h"
 #include "shader_loader.h"
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <format>
-#include <algorithm>
 
 namespace Charcoal {
 Vertex::Vertex() : position{0.0f, 0.0f, 0.0f}, rgb{1.0f, 1.0f, 1.0f} {
@@ -13,7 +13,8 @@ Vertex::Vertex(const glm::vec3 &position) :
         position{position}, rgb{1.0f, 1.0f, 1.0f} {
 }
 
-Vertex::Vertex(const glm::vec3 &position, const glm::vec3 &rgb) : position {position}, rgb {rgb} {
+Vertex::Vertex(const glm::vec3 &position, const glm::vec3 &rgb) :
+        position{position}, rgb{rgb} {
 }
 
 void Vertex::set_rgb(int r, int g, int b) {
@@ -83,8 +84,10 @@ void Renderer::submit_mesh(const Mesh &mesh) {
         glDisableVertexAttribArray(position_index);
         glDisableVertexAttribArray(rgb_index);
     } else {
-        // attrib index, attrib element count, attrib element type, normalized, size of vertex (stride), attrib offset within vertex
-        glVertexAttribPointer(position_index, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+        // attrib index, attrib element count, attrib element type, normalized,
+        // size of vertex (stride), attrib offset within vertex
+        glVertexAttribPointer(position_index, 3, GL_FLOAT, GL_FALSE,
+                sizeof(Vertex),
                 reinterpret_cast<GLvoid *>(offsetof(Vertex, position)));
         glVertexAttribPointer(rgb_index, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
                 reinterpret_cast<GLvoid *>(offsetof(Vertex, rgb)));
@@ -122,12 +125,11 @@ void Renderer::render(AppState *app_state) {
             // program class to define this behavior
             float time_value =
                     app_state->time.ns_to_f32(app_state->time.get_total_time());
-            float green_value = (std::sin(time_value) / 2.0f) + 0.5f;
-            int vertex_color_location =
-                    glGetUniformLocation(shader_program, "our_color");
-            if (vertex_color_location > -1) {
-                glUniform4f(
-                        vertex_color_location, 0.0f, green_value, 0.0f, 1.0f);
+            float offset = (std::sin(time_value) / 2.0);
+            int vertex_offset_location =
+                    glGetUniformLocation(shader_program, "offset");
+            if (vertex_offset_location > -1) {
+                glUniform1f(vertex_offset_location, offset);
             }
         }
         glBindVertexArray(vao);

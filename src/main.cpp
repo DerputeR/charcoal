@@ -220,7 +220,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     // update the scene
     // TODO:: separate scene and renderer components
     // Ideally we'd like to have the scene loaded at runtime dynamically
-    triangle_scene.update(app_state->time.get_delta_ns());
+    triangle_scene.update(app_state->time);
 
     // clear the buffer
     glClearColor(app_state->config.clear_color.r,
