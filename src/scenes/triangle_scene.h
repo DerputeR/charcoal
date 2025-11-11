@@ -4,7 +4,7 @@
 
 namespace Charcoal {
 class TriangleScene : public Scene {
-    std::vector<Vertex> verts{{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
+    std::vector<Vertex> verts{{{-0.5f, -0.5f, 0.0f}, 0x0000FF},
             {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
             {{0.0f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}}};
     std::vector<int> indices{2, 0, 1};

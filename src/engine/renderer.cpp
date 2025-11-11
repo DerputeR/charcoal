@@ -1,26 +1,43 @@
 #include "renderer.h"
+#include "SDL3/SDL_log.h"
 #include "shader_loader.h"
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <format>
+#include <glm/gtc/integer.hpp>
+#include <glm/vec4.hpp>
 
 namespace Charcoal {
-Vertex::Vertex() : position{0.0f, 0.0f, 0.0f}, rgb{1.0f, 1.0f, 1.0f} {
+Vertex::Vertex() : position{0.0f, 0.0f, 0.0f}, rgb{0xFFFFFF} {
 }
 
-Vertex::Vertex(const glm::vec3 &position) :
-        position{position}, rgb{1.0f, 1.0f, 1.0f} {
+Vertex::Vertex(const glm::vec3 &position) : position{position}, rgb{0xFFFFFF} {
 }
 
 Vertex::Vertex(const glm::vec3 &position, const glm::vec3 &rgb) :
+        position{position}, rgb{(glm::uround(rgb.x * 255.0f) << 16) |
+                                    (glm::uround(rgb.y * 255.0f) << 8) |
+                                    glm::uround(rgb.z * 255.0f)} {
+    SDL_LogDebug(
+            SDL_LOG_CATEGORY_RENDER, "New vertex with color %06X", this->rgb);
+    // glm::vec4 glsl{(this->rgb / 65536u) / 255.0f,
+    // ((this->rgb * 256u) / 65536u) / 255.0f,
+    // ((this->rgb * 65536u) / 65536u) / 255.0f, 1.0f};
+    glm::vec4 glsl{((this->rgb & 0xFF0000u) >> 16) / 255.0f,
+            ((this->rgb & 0x00FF00u) >> 8) / 255.0f,
+            (this->rgb & 0x0000FFu) / 255.0f, 1.0f};
+
+    SDL_LogDebug(SDL_LOG_CATEGORY_RENDER,
+            "In GLSL, this would be read as: r: %f; g: %f; b: %f", glsl.x,
+            glsl.y, glsl.z);
+}
+
+Vertex::Vertex(const glm::vec3 &position, glm::uint32 rgb) :
         position{position}, rgb{rgb} {
 }
 
 void Vertex::set_rgb(int r, int g, int b) {
-    rgb.x = std::clamp(r, 0, 255) / 255.0f;
-    rgb.y = std::clamp(g, 0, 255) / 255.0f;
-    rgb.z = std::clamp(b, 0, 255) / 255.0f;
+    rgb = (r << 16) | (g << 8) | b;
 }
 
 Renderer::Renderer() :
@@ -89,7 +106,8 @@ void Renderer::submit_mesh(const Mesh &mesh) {
         glVertexAttribPointer(position_index, 3, GL_FLOAT, GL_FALSE,
                 sizeof(Vertex),
                 reinterpret_cast<GLvoid *>(offsetof(Vertex, position)));
-        glVertexAttribPointer(rgb_index, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+        glVertexAttribPointer(rgb_index, 1, GL_UNSIGNED_INT, GL_FALSE,
+                sizeof(Vertex),
                 reinterpret_cast<GLvoid *>(offsetof(Vertex, rgb)));
         glEnableVertexAttribArray(position_index);
         glEnableVertexAttribArray(rgb_index);
