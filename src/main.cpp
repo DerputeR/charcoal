@@ -30,9 +30,6 @@
 
 #include "app_info.h"
 
-static Charcoal::TriangleScene
-        triangle_scene; // todo: replace with proper scene loading system. also
-                        // probably don't want this living on the stack
 static Charcoal::Gui::DebugGui debug_gui;
 static std::unique_ptr<Charcoal::Renderer> renderer;
 static SDL_Window *window;
@@ -52,6 +49,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
 
     // Appstate init
     Charcoal::AppState *app_state = new Charcoal::AppState();
+    app_state->scene = std::make_unique<Charcoal::TriangleScene>();
     *appstate = app_state;
 
     // Window init
@@ -220,7 +218,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     // update the scene
     // TODO:: separate scene and renderer components
     // Ideally we'd like to have the scene loaded at runtime dynamically
-    triangle_scene.update(app_state->time);
+    app_state->scene->update(app_state->time);
 
     // clear the buffer
     glClearColor(app_state->config.clear_color.r,
@@ -231,7 +229,10 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     // draw the scene
     // TODO: submit draw calls/update buffers if they changed before this step
     if (app_state->time.get_frame_count() == 1) {
-        renderer->submit_mesh(triangle_scene.get_meshes()[0]);
+        Charcoal::TriangleScene *scene =
+                reinterpret_cast<Charcoal::TriangleScene *>(
+                        app_state->scene.get());
+        renderer->submit_mesh(scene->get_meshes()[0]);
         if (renderer->get_error() != Charcoal::Renderer::Error::none) {
             SDL_LogCritical(SDL_LOG_CATEGORY_RENDER, "%s",
                     renderer->get_error_msg().c_str());

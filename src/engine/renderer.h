@@ -14,11 +14,12 @@ namespace Charcoal {
  */
 struct Vertex {
     glm::vec3 position;
-    glm::vec3 rgb; // todo: convert this into a single int, which can store rgb in hex
+    glm::uint32 rgb;
 
     Vertex();
     Vertex(const glm::vec3 &position);
     Vertex(const glm::vec3 &position, const glm::vec3 &rgb);
+    Vertex(const glm::vec3 &position, glm::uint32 rgb);
 
     /**
      * @brief Helper class to set vertex color using integer RGB representation

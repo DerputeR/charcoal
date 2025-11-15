@@ -1,12 +1,14 @@
 #pragma once
 #include "config.h"
-#include "time.h"
-#include "SDL3/SDL_video.h"
 #include "glad/glad.h"
+#include "scene.h"
+#include "time.h"
+#include <memory>
 
 namespace Charcoal {
 struct AppState {
     Time time;
     Config config;
+    std::unique_ptr<Scene> scene;
 };
 } // namespace Charcoal
