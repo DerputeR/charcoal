@@ -14,7 +14,6 @@ namespace Charcoal {
  */
 struct Vertex {
     glm::vec3 position;
-
     glm::uint32 rgb;
 
     Vertex();
