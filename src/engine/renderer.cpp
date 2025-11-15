@@ -20,9 +20,6 @@ Vertex::Vertex(const glm::vec3 &position, const glm::vec3 &rgb) :
                                     glm::uround(rgb.z * 255.0f)} {
     SDL_LogDebug(
             SDL_LOG_CATEGORY_RENDER, "New vertex with color %06X", this->rgb);
-    // glm::vec4 glsl{(this->rgb / 65536u) / 255.0f,
-    // ((this->rgb * 256u) / 65536u) / 255.0f,
-    // ((this->rgb * 65536u) / 65536u) / 255.0f, 1.0f};
     glm::vec4 glsl{((this->rgb & 0xFF0000u) >> 16) / 255.0f,
             ((this->rgb & 0x00FF00u) >> 8) / 255.0f,
             (this->rgb & 0x0000FFu) / 255.0f, 1.0f};
@@ -48,7 +45,7 @@ Renderer::Renderer() :
 
 Renderer::Renderer(GLuint shader_program) :
         shader_program{0}, error{Error::none}, error_msg{""}, vbo{0}, vao{0},
-        index_count{0}, position_index{-1} {
+        index_count{0}, position_index{-1}, rgb_index{-1} {
     set_shader_program(shader_program);
     glGenBuffers(1, &vbo);
     glGenVertexArrays(1, &vao);

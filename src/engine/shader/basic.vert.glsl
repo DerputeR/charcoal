@@ -9,7 +9,7 @@ void main() {
     vertex_color = vec4(
         ((rgb & 0xFF0000u) >> 16) / 255.0,
         ((rgb & 0x00FF00u) >> 8) / 255.0,
-        (rgb & 0x0000FFu) / 255.0,
+        ((rgb & 0x0000FFu) >> 0) / 255.0,
         1.0
     );
     // vertex_color = vec4(1.0, 0.0, 1.0, 1.0);
