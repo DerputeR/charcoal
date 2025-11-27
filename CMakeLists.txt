@@ -61,6 +61,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>/lib/${PROJECT_
 # Create an option to switch between a system SDL lib and a vendored one
 # If this variable exists in the cache, its value will not be overwritten
 option(MYGAME_VENDORED "Use vendored libraries" OFF)
+set(SDLIMAGE_VENDORED ${MYGAME_VENDORED})
 set(CMAKE_PREFIX_PATH "/usr/local" CACHE PATH
     "Custom prefix paths to search for libraries under")
 
@@ -71,15 +72,41 @@ set(CMAKE_PREFIX_PATH "/usr/local" CACHE PATH
 option(SDL_SHARED "Build a SDL shared library (if available)" ON)
 option(SDL_STATIC "Build a SDL static library (if available)" OFF)
 
+# Disable unused image formats
+option(SDLIMAGE_ANI "Support loading ANI animations" OFF)
+option(SDLIMAGE_AVIF "Support loading AVIF images" OFF)
+option(SDLIMAGE_BMP "Support loading BMP images" OFF)
+option(SDLIMAGE_GIF "Support loading GIF images" OFF)
+option(SDLIMAGE_JPG "Support loading JPEG images" OFF)
+option(SDLIMAGE_JXL "Support loading JXL images" OFF)
+option(SDLIMAGE_LBM "Support loading LBM images" OFF)
+option(SDLIMAGE_PCX "Support loading PCX images" OFF)
+option(SDLIMAGE_PNG "Support loading PNG images" ON)
+option(SDLIMAGE_PNM "Support loading PNM images" OFF)
+option(SDLIMAGE_QOI "Support loading QOI images" OFF)
+option(SDLIMAGE_SVG "Support loading SVG images" OFF)
+option(SDLIMAGE_TGA "Support loading TGA images" OFF)
+option(SDLIMAGE_TIF "Support loading TIFF images" OFF)
+option(SDLIMAGE_WEBP "Support loading WEBP images" OFF)
+option(SDLIMAGE_XCF "Support loading XCF images" OFF)
+option(SDLIMAGE_XPM "Support loading XPM images" OFF)
+option(SDLIMAGE_XV "Support loading XV images" OFF)
+
 if(MYGAME_VENDORED)
     add_subdirectory("vendored/SDL" EXCLUDE_FROM_ALL)
+    add_subdirectory("vendored/SDL_image" EXCLUDE_FROM_ALL)
 else()
     FetchContent_Declare(
         SDL3
         GIT_REPOSITORY  https://github.com/libsdl-org/SDL
         GIT_TAG         release-3.2.24
     )
-    FetchContent_MakeAvailable(SDL3)
+    FetchContent_Declare(
+        SDL3_image
+        GIT_REPOSITORY  https://github.com/libsdl-org/SDL_image
+        GIT_TAG         release-3.2.4
+    )
+    FetchContent_MakeAvailable(SDL3 SDL3_image)
 endif()
 
 # Engine sources
@@ -139,20 +166,21 @@ elseif (CMAKE_BUILD_TYPE STREQUAL "Debug"
 endif()
 
 # Link to the actual SDL3 library.
-target_link_libraries(Charcoal PRIVATE SDL3::SDL3)
+target_link_libraries(Charcoal PUBLIC SDL3_image::SDL3_image SDL3::SDL3)
 target_compile_features(Charcoal PUBLIC cxx_std_23)
 set_target_properties(Charcoal PROPERTIES CXX_EXTENSIONS OFF)
 
 # Pick up the includes for our dependencies
-target_include_directories(Charcoal PRIVATE "${sdl3_SOURCE_DIR}/include")
+# target_include_directories(Charcoal PRIVATE "${sdl3_SOURCE_DIR}/include")
+# target_include_directories(Charcoal PRIVATE "${sdl3_image_SOURCE_DIR}/include")
 target_include_directories(Charcoal PRIVATE "${imgui_SOURCE_DIR}")
 target_include_directories(Charcoal PRIVATE "${imgui_SOURCE_DIR}/backends")
 target_include_directories(Charcoal PRIVATE "${imgui_SOURCE_DIR}/misc/cpp")
-target_include_directories(Charcoal PRIVATE "glm")
+# target_include_directories(Charcoal PRIVATE "glm")
 target_include_directories(Charcoal PRIVATE "glad/include")
 
 # Link to the library (GLM becomes a static library in this case)
-target_link_libraries(Charcoal PRIVATE glm)
+target_link_libraries(Charcoal PUBLIC glm)
 
 # Installation rules
 include(GNUInstallDirs)
