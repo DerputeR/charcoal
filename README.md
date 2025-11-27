@@ -16,6 +16,8 @@ This project _should_ work on a variety of other systems, but this has not been 
 
 # Installation
 
+This repo makes use of Git LFS to fetch and store resources (graphics, audio, etc.). Ensure you have Git LFS installed before working with this project!
+
 This project uses CMake to build and install.
 There are some included build scripts to get started:
 
