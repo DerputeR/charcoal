@@ -151,7 +151,8 @@ add_executable(Charcoal "src/main.cpp"
 # Copy resources
 add_custom_command(
     TARGET Charcoal POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different "resources" "${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/resources"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/resources"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different "${CMAKE_SOURCE_DIR}/resources" "${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/resources"
 )
 
 # For debugging
