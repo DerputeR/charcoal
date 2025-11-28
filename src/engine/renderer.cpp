@@ -9,6 +9,7 @@
 #include <format>
 #include <glm/gtc/integer.hpp>
 #include <glm/vec4.hpp>
+#include <algorithm>
 
 namespace Charcoal {
 Vertex::Vertex() : position{0.0f, 0.0f, 0.0f}, rgb{0xFFFFFF}, uv{0.0f, 0.0f} {
@@ -25,7 +26,7 @@ Vertex::Vertex(const glm::vec3 &position, const glm::vec3 &rgb) :
 }
 
 Vertex::Vertex(const glm::vec3 &position, glm::uint32 rgb) :
-        position{position}, rgb{rgb} {
+        position{position}, rgb{rgb}, uv{position.x, position.y} {
 }
 
 Vertex::Vertex(
