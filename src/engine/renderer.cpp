@@ -1,5 +1,8 @@
 #include "renderer.h"
 #include "SDL3/SDL_log.h"
+#include "SDL3/SDL_surface.h"
+#include "SDL3_image/SDL_image.h"
+#include "app_state.h"
 #include "shader_loader.h"
 #include <cmath>
 #include <cstddef>
@@ -8,33 +11,59 @@
 #include <glm/vec4.hpp>
 
 namespace Charcoal {
-Vertex::Vertex() : position{0.0f, 0.0f, 0.0f}, rgb{0xFFFFFF} {
+Vertex::Vertex() : position{0.0f, 0.0f, 0.0f}, rgb{0xFFFFFF}, uv{0.0f, 0.0f} {
 }
 
-Vertex::Vertex(const glm::vec3 &position) : position{position}, rgb{0xFFFFFF} {
+Vertex::Vertex(const glm::vec3 &position) :
+        position{position}, rgb{0xFFFFFF}, uv{position.x, position.y} {
 }
 
+// TODO: clamp the rgb values
 Vertex::Vertex(const glm::vec3 &position, const glm::vec3 &rgb) :
-        position{position}, rgb{(glm::uround(rgb.x * 255.0f) << 16) |
-                                    (glm::uround(rgb.y * 255.0f) << 8) |
-                                    glm::uround(rgb.z * 255.0f)} {
-    SDL_LogDebug(
-            SDL_LOG_CATEGORY_RENDER, "New vertex with color %06X", this->rgb);
-    glm::vec4 glsl{((this->rgb & 0xFF0000u) >> 16) / 255.0f,
-            ((this->rgb & 0x00FF00u) >> 8) / 255.0f,
-            (this->rgb & 0x0000FFu) / 255.0f, 1.0f};
-
-    SDL_LogDebug(SDL_LOG_CATEGORY_RENDER,
-            "In GLSL, this would be read as: r: %f; g: %f; b: %f", glsl.x,
-            glsl.y, glsl.z);
+        position{position}, rgb{pack_normalized_rgb24_to_uint32(rgb)},
+        uv{position.x, position.y} {
 }
 
 Vertex::Vertex(const glm::vec3 &position, glm::uint32 rgb) :
         position{position}, rgb{rgb} {
 }
 
+Vertex::Vertex(
+        const glm::vec3 &position, const glm::vec3 &rgb, const glm::vec2 &uv) :
+        position{position}, rgb{pack_normalized_rgb24_to_uint32(rgb)}, uv{uv} {
+}
+
+Vertex::Vertex(const glm::vec3 &position, glm::uint32 rgb,
+        const glm::vec2 &uv) : position{position}, rgb{rgb}, uv{uv} {
+}
+
 void Vertex::set_rgb(int r, int g, int b) {
+    r = std::clamp(r, 0, 255);
+    g = std::clamp(g, 0, 255);
+    b = std::clamp(b, 0, 255);
     rgb = (r << 16) | (g << 8) | b;
+}
+
+glm::uint32 Vertex::pack_rgb24_to_uint32(int r, int g, int b) {
+    r = std::clamp(r, 0, 255);
+    g = std::clamp(g, 0, 255);
+    b = std::clamp(b, 0, 255);
+    glm::uint32 rgb = (r << 16) | (g << 8) | b;
+    return rgb;
+}
+
+glm::uint32 Vertex::pack_normalized_rgb24_to_uint32(float r, float g, float b) {
+    r = std::clamp(r, 0.0f, 1.0f);
+    g = std::clamp(g, 0.0f, 1.0f);
+    b = std::clamp(b, 0.0f, 1.0f);
+    int ri = glm::uround(r * 255.0f);
+    int gi = glm::uround(g * 255.0f);
+    int bi = glm::uround(b * 255.0f);
+    return pack_rgb24_to_uint32(ri, gi, bi);
+}
+
+glm::uint32 Vertex::pack_normalized_rgb24_to_uint32(const glm::vec3 rgb) {
+    return pack_normalized_rgb24_to_uint32(rgb.r, rgb.g, rgb.b);
 }
 
 Renderer::Renderer() :
@@ -57,15 +86,40 @@ Renderer::Renderer(GLuint shader_program) :
     // enable backface culling
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
+
+    // WIP: textures
+    glGenTextures(1, &texture); // this can be an array of textures
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
+    glTexParameteri(
+            GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    // load the texture data
+    constexpr const char *crate_path = "resources/textures/crate.png";
+    SDL_Surface *surface = IMG_Load(crate_path);
+    if (surface == nullptr) {
+        SDL_LogCritical(
+                SDL_LOG_CATEGORY_SYSTEM, "Unable to load \"%s\"", crate_path);
+    } else {
+        SDL_Surface *temp = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
+        SDL_DestroySurface(surface);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surface->w, surface->h, 0,
+                GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
+        SDL_DestroySurface(temp);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
 }
 
 void Renderer::load_attribute_indices() {
     if (shader_program == 0) {
         position_index = -1;
         rgb_index = -1;
+        uv_index = -1;
     } else {
         position_index = glGetAttribLocation(shader_program, "pos");
         rgb_index = glGetAttribLocation(shader_program, "rgb");
+        uv_index = glGetAttribLocation(shader_program, "uv");
     }
 }
 
@@ -97,16 +151,20 @@ void Renderer::submit_mesh(const Mesh &mesh) {
                 buf_size, expected_size);
         glDisableVertexAttribArray(position_index);
         glDisableVertexAttribArray(rgb_index);
+        glDisableVertexAttribArray(uv_index);
     } else {
-        // attrib index, attrib element count, attrib element type, normalized,
-        // size of vertex (stride), attrib offset within vertex
+        // attrib index, attrib element count, attrib element type,
+        // normalized, size of vertex (stride), attrib offset within vertex
         glVertexAttribPointer(position_index, 3, GL_FLOAT, GL_FALSE,
                 sizeof(Vertex),
                 reinterpret_cast<GLvoid *>(offsetof(Vertex, position)));
         glVertexAttribIPointer(rgb_index, 1, GL_UNSIGNED_INT, sizeof(Vertex),
                 reinterpret_cast<GLvoid *>(offsetof(Vertex, rgb)));
+        glVertexAttribPointer(uv_index, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                reinterpret_cast<GLvoid *>(offsetof(Vertex, uv)));
         glEnableVertexAttribArray(position_index);
         glEnableVertexAttribArray(rgb_index);
+        glEnableVertexAttribArray(uv_index);
     }
 
     // copy the indices to the ebo
@@ -146,6 +204,15 @@ void Renderer::render(AppState *app_state) {
                 glUniform1f(vertex_offset_location, offset);
             }
         }
+
+        // TODO: figure out where this should go
+        // int texture_location = glGetUniformLocation(shader_program,
+        // "obj_texture"); if (texture_location > -1) {
+        //     glUniform1f(texture_location, texture);
+        // }
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture);
+
         glBindVertexArray(vao);
         glDrawElements(GL_TRIANGLES, index_count, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);

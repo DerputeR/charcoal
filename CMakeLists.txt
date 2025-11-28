@@ -100,11 +100,13 @@ else()
         SDL3
         GIT_REPOSITORY  https://github.com/libsdl-org/SDL
         GIT_TAG         release-3.2.24
+        EXCLUDE_FROM_ALL
     )
     FetchContent_Declare(
         SDL3_image
         GIT_REPOSITORY  https://github.com/libsdl-org/SDL_image
         GIT_TAG         release-3.2.4
+        EXCLUDE_FROM_ALL
     )
     FetchContent_MakeAvailable(SDL3 SDL3_image)
 endif()
@@ -144,6 +146,12 @@ add_executable(Charcoal "src/main.cpp"
                         ${IMGUI_BACKEND_SOURCES}
                         ${ENGINE_SOURCES}
                         ${SCENE_SOURCES}
+)
+
+# Copy resources
+add_custom_command(
+    TARGET Charcoal POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different "resources" "${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/resources"
 )
 
 # For debugging

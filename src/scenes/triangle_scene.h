@@ -14,6 +14,7 @@ public:
     void update(const Time &time);
     const std::vector<Mesh> &get_meshes() const;
 
+    TriangleScene();
     ~TriangleScene();
 };
 } // namespace Charcoal
