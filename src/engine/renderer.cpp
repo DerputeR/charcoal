@@ -1,15 +1,15 @@
 #include "renderer.h"
 #include "SDL3/SDL_log.h"
 #include "SDL3/SDL_surface.h"
-#include "SDL3_image/SDL_image.h"
+// #include "SDL3_image/SDL_image.h"
 #include "app_state.h"
 #include "shader_loader.h"
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <format>
 #include <glm/gtc/integer.hpp>
 #include <glm/vec4.hpp>
-#include <algorithm>
 
 namespace Charcoal {
 Vertex::Vertex() : position{0.0f, 0.0f, 0.0f}, rgb{0xFFFFFF}, uv{0.0f, 0.0f} {
@@ -98,7 +98,8 @@ Renderer::Renderer(GLuint shader_program) :
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     // load the texture data
     constexpr const char *crate_path = "resources/textures/crate.png";
-    SDL_Surface *surface = IMG_Load(crate_path);
+    SDL_Surface *surface = nullptr;
+    // surface = IMG_Load(crate_path);
     if (surface == nullptr) {
         SDL_LogCritical(
                 SDL_LOG_CATEGORY_SYSTEM, "Unable to load \"%s\"", crate_path);

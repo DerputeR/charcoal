@@ -94,7 +94,7 @@ option(SDLIMAGE_XV "Support loading XV images" OFF)
 
 if(MYGAME_VENDORED)
     add_subdirectory("vendored/SDL" EXCLUDE_FROM_ALL)
-    add_subdirectory("vendored/SDL_image" EXCLUDE_FROM_ALL)
+    # add_subdirectory("vendored/SDL_image" EXCLUDE_FROM_ALL)
 else()
     FetchContent_Declare(
         SDL3
@@ -102,13 +102,14 @@ else()
         GIT_TAG         release-3.2.24
         EXCLUDE_FROM_ALL
     )
-    FetchContent_Declare(
-        SDL3_image
-        GIT_REPOSITORY  https://github.com/libsdl-org/SDL_image
-        GIT_TAG         release-3.2.4
-        EXCLUDE_FROM_ALL
-    )
-    FetchContent_MakeAvailable(SDL3 SDL3_image)
+    # FetchContent_Declare(
+    #     SDL3_image
+    #     GIT_REPOSITORY  https://github.com/libsdl-org/SDL_image
+    #     GIT_TAG         release-3.2.4
+    #     EXCLUDE_FROM_ALL
+    # )
+    # FetchContent_MakeAvailable(SDL3_image)
+    FetchContent_MakeAvailable(SDL3)
 endif()
 
 # Engine sources
@@ -175,7 +176,8 @@ elseif (CMAKE_BUILD_TYPE STREQUAL "Debug"
 endif()
 
 # Link to the actual SDL3 library.
-target_link_libraries(Charcoal PUBLIC SDL3_image::SDL3_image SDL3::SDL3)
+# target_link_libraries(Charcoal PUBLIC SDL3_image::SDL3_image)
+target_link_libraries(Charcoal PUBLIC SDL3::SDL3)
 target_compile_features(Charcoal PUBLIC cxx_std_23)
 set_target_properties(Charcoal PROPERTIES CXX_EXTENSIONS OFF)
 
