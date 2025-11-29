@@ -1,3 +1,7 @@
+# TODO: reference https://github.com/Ravbug/sdl3-sample/blob/main/CMakeLists.txt
+# Update to support Emscripten builds, Apple (need hardware/VM to test)
+# Make labeling nicer
+
 cmake_minimum_required(VERSION 3.31...4.0)
 
 project(Charcoal VERSION 0.1.0
@@ -6,6 +10,40 @@ project(Charcoal VERSION 0.1.0
 
 # Export compile commands for things like clangd
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
+
+# This ensures that the dynamic lib goes into the build directory automatically.
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>/lib")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>/lib/${PROJECT_NAME}")
+
+# Prevent installing to system target_include_directories
+set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}" CACHE INTERNAL "")
+
+# Platform-specific configurations
+
+# Apple - This is untested!
+# if((APPLE AND NOT CMAKE_SYSTEM_NAME MATCHES "Darwin") OR EMSCRIPTEN)
+#     set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "")
+#     set(SDL_SHARED OFF)
+#     # set(SDL_STATIC ON)
+# else()
+#     set(SDL_SHARED ON)
+# endif()
+
+# Windows
+if(MSVC)
+    if(NOT CMAKE_GENERATOR STREQUAL "Ninja")
+        add_definitions(/MP)
+        # target_include_directories(Charcoal PUBLIC "/MP")
+    endif()
+endif()
+
+
+
+##########################################################
+#                 SOURCE PRE-PROCESSING                  #
+##########################################################
+
 
 # App versioning/title
 set(APP_PACKAGE "com.example.charcoal")
@@ -53,10 +91,6 @@ set(IMGUI_DEBUG "${imgui_SOURCE_DIR}/misc/debuggers/imgui.natvis"
 
 # * Linking SDL instructions are found in SDL/docs/README-cmake.md
 
-# This ensures that the dynamic lib goes into the build directory automatically.
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>/lib")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>/lib/${PROJECT_NAME}")
 
 # Create an option to switch between a system SDL lib and a vendored one
 # If this variable exists in the cache, its value will not be overwritten
