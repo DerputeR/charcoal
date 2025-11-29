@@ -1,3 +1,7 @@
+##########################################################
+#                    PROJECT SETUP                       #
+##########################################################
+
 # TODO: reference https://github.com/Ravbug/sdl3-sample/blob/main/CMakeLists.txt
 # Update to support Emscripten builds, Apple (need hardware/VM to test)
 # Make labeling nicer
@@ -5,54 +9,44 @@
 cmake_minimum_required(VERSION 3.31...4.0)
 
 project(Charcoal VERSION 0.1.0
-                 DESCRIPTION "A terrible, inefficient, but custom-made game engine"
-                 LANGUAGES C CXX)
+    DESCRIPTION "A terrible, inefficient, but custom-made game engine"
+    LANGUAGES C CXX)
+set(EXECUTABLE_NAME ${PROJECT_NAME})
 
 # Export compile commands for things like clangd
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
 # This ensures that the dynamic lib goes into the build directory automatically.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>/lib")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>/lib/${PROJECT_NAME}")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>")
 
-# Prevent installing to system target_include_directories
+# Prevent installing to system directories
 set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}" CACHE INTERNAL "")
 
 # Platform-specific configurations
-
 # Apple - This is untested!
-# if((APPLE AND NOT CMAKE_SYSTEM_NAME MATCHES "Darwin") OR EMSCRIPTEN)
-#     set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "")
-#     set(SDL_SHARED OFF)
-#     # set(SDL_STATIC ON)
-# else()
-#     set(SDL_SHARED ON)
-# endif()
+if((APPLE AND NOT CMAKE_SYSTEM_NAME MATCHES "Darwin") OR EMSCRIPTEN)
+    set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "")
+    set(SDL_SHARED OFF)
+else()
+    set(SDL_SHARED ON)
+endif()
 
 # Windows
 if(MSVC)
     if(NOT CMAKE_GENERATOR STREQUAL "Ninja")
         add_definitions(/MP)
-        # target_include_directories(Charcoal PUBLIC "/MP")
     endif()
 endif()
 
 
-
 ##########################################################
-#                 SOURCE PRE-PROCESSING                  #
+#                      DEPENDENCIES                      #
 ##########################################################
 
-
-# App versioning/title
-set(APP_PACKAGE "com.example.charcoal")
-set(APP_FULL_NAME "Charcoal Engine")
-set(APP_WINDOW_TITLE "Charcoal Engine")
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/app_info.h.in" "${CMAKE_CURRENT_SOURCE_DIR}/src/app_info.h" @ONLY)
-
-# Dependency management, excluding SDL3 (special case handled below)
-set(FETCHCONTENT_UPDATES_DISCONNECTED ON CACHE BOOL "If enabled, only fetch content the first time. Future runs will not attempt to redownload.")
+set(FETCHCONTENT_UPDATES_DISCONNECTED ON CACHE CMAKE_BUILD_TOOL
+    "If enabled, only fetch content the first time.
+    Future runs will not attempt to redownload.")
 include(FetchContent)
 
 FetchContent_Declare(
@@ -67,6 +61,42 @@ FetchContent_Declare(
 )
 
 FetchContent_MakeAvailable(imgui glm)
+
+
+# Linking SDL instructions are found in SDL/docs/README-cmake.md
+# Create an option to switch between a system SDL lib and a vendored one
+# If this variable exists in the cache, its value will not be overwritten
+option(MYGAME_VENDORED "Use vendored libraries" OFF)
+set(SDLIMAGE_VENDORED ${MYGAME_VENDORED})
+set(CMAKE_PREFIX_PATH "/usr/local" CACHE PATH
+    "Custom prefix paths to search for libraries under")
+
+# Note: An older version of this CMakeLists.txt used GLFW as a dependency.
+# This is no longer the case, but it's not a bad idea to specify library mode.
+# Before, GLFW set the variable BUILD_SHARED_LIBS to false before we hit SDL,
+# so we needed to manually enable SDL_SHARED before acquiring SDL
+# option(SDL_SHARED "Build a SDL shared library (if available)" ON)
+# option(SDL_STATIC "Build a SDL static library (if available)" OFF)
+
+if(MYGAME_VENDORED)
+    add_subdirectory("vendored/SDL" EXCLUDE_FROM_ALL)
+    add_subdirectory("vendored/SDL_image" EXCLUDE_FROM_ALL)
+else()
+    FetchContent_Declare(
+        SDL3
+        GIT_REPOSITORY  https://github.com/libsdl-org/SDL
+        GIT_TAG         release-3.2.24
+        EXCLUDE_FROM_ALL
+    )
+    FetchContent_Declare(
+        SDL3_image
+        GIT_REPOSITORY  https://github.com/libsdl-org/SDL_image
+        GIT_TAG         release-3.2.4
+        EXCLUDE_FROM_ALL
+    )
+    FetchContent_MakeAvailable(SDL3_image)
+    FetchContent_MakeAvailable(SDL3)
+endif()
 
 # Dear ImGUI doesn't have its own CMakeLists.txt so we'll have to declare
 # which sources we're using so we can embed it directly into the executable
@@ -88,24 +118,6 @@ set(IMGUI_DEBUG "${imgui_SOURCE_DIR}/misc/debuggers/imgui.natvis"
                 "${imgui_SOURCE_DIR}/misc/debuggers/imgui.natstepfilter"
 )
 
-
-# * Linking SDL instructions are found in SDL/docs/README-cmake.md
-
-
-# Create an option to switch between a system SDL lib and a vendored one
-# If this variable exists in the cache, its value will not be overwritten
-option(MYGAME_VENDORED "Use vendored libraries" OFF)
-set(SDLIMAGE_VENDORED ${MYGAME_VENDORED})
-set(CMAKE_PREFIX_PATH "/usr/local" CACHE PATH
-    "Custom prefix paths to search for libraries under")
-
-# Note: An older version of this CMakeLists.txt used GLFW as a dependency.
-# This is no longer the case, but it's not a bad idea to specify library mode.
-# Before, GLFW set the variable BUILD_SHARED_LIBS to false before we hit SDL,
-# so we needed to manually enable SDL_SHARED before acquiring SDL
-option(SDL_SHARED "Build a SDL shared library (if available)" ON)
-option(SDL_STATIC "Build a SDL static library (if available)" OFF)
-
 # Disable unused image formats
 option(SDLIMAGE_ANI "Support loading ANI animations" OFF)
 option(SDLIMAGE_AVIF "Support loading AVIF images" OFF)
@@ -126,76 +138,90 @@ option(SDLIMAGE_XCF "Support loading XCF images" OFF)
 option(SDLIMAGE_XPM "Support loading XPM images" OFF)
 option(SDLIMAGE_XV "Support loading XV images" OFF)
 
-if(MYGAME_VENDORED)
-    add_subdirectory("vendored/SDL" EXCLUDE_FROM_ALL)
-    # add_subdirectory("vendored/SDL_image" EXCLUDE_FROM_ALL)
-else()
-    FetchContent_Declare(
-        SDL3
-        GIT_REPOSITORY  https://github.com/libsdl-org/SDL
-        GIT_TAG         release-3.2.24
-        EXCLUDE_FROM_ALL
-    )
-    # FetchContent_Declare(
-    #     SDL3_image
-    #     GIT_REPOSITORY  https://github.com/libsdl-org/SDL_image
-    #     GIT_TAG         release-3.2.4
-    #     EXCLUDE_FROM_ALL
-    # )
-    # FetchContent_MakeAvailable(SDL3_image)
-    FetchContent_MakeAvailable(SDL3)
-endif()
+
+##########################################################
+#                 SOURCE PRE-PROCESSING                  #
+##########################################################
+
+# App versioning/title
+set(APP_PACKAGE "com.example.charcoal")
+set(APP_FULL_NAME "Charcoal Engine")
+set(APP_WINDOW_TITLE "Charcoal Engine")
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/app_info.h.in"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/app_info.h" @ONLY
+)
 
 # Engine sources
-set(ENGINE_SOURCES "src/engine/shader_loader.cpp"
-                   "src/engine/time.cpp"
-                   "src/engine/scene.cpp"
-                   "src/engine/renderer.cpp"
-                   "src/engine/gui/debug_gui.cpp"
-                   "src/engine/window_utils.cpp"
+set(ENGINE_SOURCES
+    "src/engine/shader_loader.cpp"
+    "src/engine/time.cpp"
+    "src/engine/scene.cpp"
+    "src/engine/renderer.cpp"
+    "src/engine/gui/debug_gui.cpp"
+    "src/engine/window_utils.cpp"
 )
 
-# Shader sources
-set(SHADER_SOURCES "src/engine/shader/basic.vert.glsl"
-                   "src/engine/shader/basic.frag.glsl"
+# Shader sources; we need to track their changes
+set(SHADER_SOURCES
+    "src/engine/shader/basic.vert.glsl"
+    "src/engine/shader/basic.frag.glsl"
 )
-# track their changes
 set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-             APPEND
-             PROPERTY CMAKE_CONFIGURE_DEPENDS ${SHADER_SOURCES}
+    APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${SHADER_SOURCES}
 )
 # need to duplicate the source paths, no clean way to re-use afaik
 file(READ "src/engine/shader/basic.vert.glsl" SHADER_SRC_VERT_BASIC)
 file(READ "src/engine/shader/basic.frag.glsl" SHADER_SRC_FRAG_BASIC)
-configure_file("src/engine/shader_sources.h.in" "${CMAKE_CURRENT_SOURCE_DIR}/src/engine/shader_sources.h" @ONLY)
+configure_file(
+    "src/engine/shader_sources.h.in"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/engine/shader_sources.h"
+    @ONLY
+)
 
 # Scene sources. this is a WIP
 set(SCENE_SOURCES "src/scenes/triangle_scene.cpp")
 
+
+##########################################################
+#                   EXECUTABLE TARGET                    #
+##########################################################
+
 # Create the executable target.
 # Since Dear ImGUI is not being built as a separate static library,
 # we'll need to include the sources here.
-add_executable(Charcoal "src/main.cpp"
-                        "glad/src/glad.c"
-                        ${IMGUI_SOURCES}
-                        ${IMGUI_BACKEND_SOURCES}
-                        ${ENGINE_SOURCES}
-                        ${SCENE_SOURCES}
-)
 
-# Copy resources
-add_custom_command(
-    TARGET Charcoal POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/resources"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different "${CMAKE_SOURCE_DIR}/resources" "${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/resources"
+if(ANDROID)
+    # The SDL Java code is hardcoded to load libmain.so on
+    # Android, so we need to change EXECUTABLE_NAME
+    set(EXECUTABLE_NAME main)
+    add_library(${EXECUTABLE_NAME} SHARED)
+else()
+    add_executable(${EXECUTABLE_NAME})
+endif()
+
+# Web targets need CMake to generate a HTML webpage
+if(EMSCRIPTEN)
+    set(CMAKE_EXECUTABLE_SUFFIX ".html" CACHE INTERNAL "")
+endif()
+
+# Add sources to the target
+target_sources(${EXECUTABLE_NAME} PRIVATE
+    "src/main.cpp"
+    "glad/src/glad.c"
+    ${IMGUI_SOURCES}
+    ${IMGUI_BACKEND_SOURCES}
+    ${ENGINE_SOURCES}
+    ${SCENE_SOURCES}
+    # TODO: Apple iOS support via src/iosLaunchScreen.storyboard
 )
 
 # For debugging
-target_sources(Charcoal PRIVATE $<$<CONFIG:Debug>:${IMGUI_DEBUG}>)
-target_compile_definitions(Charcoal PRIVATE $<$<CONFIG:Debug>:DEBUG>)
+target_sources(${EXECUTABLE_NAME} PRIVATE $<$<CONFIG:Debug>:${IMGUI_DEBUG}>)
+target_compile_definitions(${EXECUTABLE_NAME} PRIVATE $<$<CONFIG:Debug>:DEBUG>)
 if (MSVC AND WIN32 AND NOT MSVC_VERSION VERSION_LESS 142)
-    target_link_options(Charcoal PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)
-    target_compile_options(Charcoal PRIVATE $<$<CONFIG:Debug>:/ZI>)
+    target_link_options(${EXECUTABLE_NAME} PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)
+    target_compile_options(${EXECUTABLE_NAME} PRIVATE $<$<CONFIG:Debug>:/ZI>)
 elseif (CMAKE_BUILD_TYPE STREQUAL "Debug"
         OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     message("Charcoal: Building with build-type ${CMAKE_BUILD_TYPE}...")
@@ -203,35 +229,48 @@ elseif (CMAKE_BUILD_TYPE STREQUAL "Debug"
         message("Charcoal: **MINGW toolchain detected**")
         # set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb -gdwarf-4")
         # target_compile_options(Charcoal PRIVATE $<$<CONFIG:Debug>:"-g -ggdb -gdwarf-4">)
-        target_compile_options(Charcoal PRIVATE $<$<CONFIG:Debug>:-ggdb -gdwarf-4>)
-        get_target_property(flags Charcoal COMPILE_OPTIONS)
+        target_compile_options(${EXECUTABLE_NAME} PRIVATE $<$<CONFIG:Debug>:-ggdb -gdwarf-4>)
+        get_target_property(flags ${EXECUTABLE_NAME} COMPILE_OPTIONS)
         message(STATUS "Charcoal compile options: ${flags}")
     endif()
 endif()
 
 # Link to the actual SDL3 library.
 # target_link_libraries(Charcoal PUBLIC SDL3_image::SDL3_image)
-target_link_libraries(Charcoal PUBLIC SDL3::SDL3)
-target_compile_features(Charcoal PUBLIC cxx_std_23)
-set_target_properties(Charcoal PROPERTIES CXX_EXTENSIONS OFF)
+target_link_libraries(${EXECUTABLE_NAME} PUBLIC
+    SDK3_image::SDL3_image
+    SDL3::SDL3
+)
+target_compile_features(${EXECUTABLE_NAME} PUBLIC cxx_std_23)
+set_target_properties(${EXECUTABLE_NAME} PROPERTIES CXX_EXTENSIONS OFF)
+
+# SDL_image bug: https://github.com/libsdl-org/SDL_image/issues/506
+if (APPLE AND NOT BUILD_SHARED_LIBS)
+    find_library(IO_LIB ImageIO REQUIRED)
+    find_library(CS_LIB CoreServices REQUIRED)
+    find_library(CT_LIB CoreText REQUIRED)
+    find_library(CG_LIB CoreGraphics REQUIRED)
+    find_library(CF_LIB CoreFoundation REQUIRED)
+    target_link_libraries(${EXECUTABLE_NAME} PUBLIC ${CF_LIB} ${CT_LIB} ${IO_LIB} ${CS_LIB} ${CG_LIB})
+endif()
 
 # Pick up the includes for our dependencies
-# target_include_directories(Charcoal PRIVATE "${sdl3_SOURCE_DIR}/include")
-# target_include_directories(Charcoal PRIVATE "${sdl3_image_SOURCE_DIR}/include")
-target_include_directories(Charcoal PRIVATE "${imgui_SOURCE_DIR}")
-target_include_directories(Charcoal PRIVATE "${imgui_SOURCE_DIR}/backends")
-target_include_directories(Charcoal PRIVATE "${imgui_SOURCE_DIR}/misc/cpp")
-# target_include_directories(Charcoal PRIVATE "glm")
-target_include_directories(Charcoal PRIVATE "glad/include")
+# target_include_directories(${EXECUTABLE_NAME} PRIVATE "${sdl3_SOURCE_DIR}/include")
+# target_include_directories(${EXECUTABLE_NAME} PRIVATE "${sdl3_image_SOURCE_DIR}/include")
+target_include_directories(${EXECUTABLE_NAME} PRIVATE "${imgui_SOURCE_DIR}")
+target_include_directories(${EXECUTABLE_NAME} PRIVATE "${imgui_SOURCE_DIR}/backends")
+target_include_directories(${EXECUTABLE_NAME} PRIVATE "${imgui_SOURCE_DIR}/misc/cpp")
+# target_include_directories(${EXECUTABLE_NAME} PRIVATE "glm")
+target_include_directories(${EXECUTABLE_NAME} PRIVATE "glad/include")
 
 # Link to the library (GLM becomes a static library in this case)
-target_link_libraries(Charcoal PUBLIC glm)
+target_link_libraries(${EXECUTABLE_NAME} PUBLIC glm)
 
 # Installation rules
 include(GNUInstallDirs)
 # include(InstallRequiredSystemLibraries)
 install(TARGETS
-            Charcoal
+            ${EXECUTABLE_NAME}
         RUNTIME
             DESTINATION ${CMAKE_INSTALL_BINDIR}
         LIBRARY
@@ -268,6 +307,22 @@ endif()
 
 # RPATH mangling
 # TODO (figure out how we're meant to do installs on Linux)
+
+
+##########################################################
+#                        RESOURCES                       #
+##########################################################
+
+# Copy resources
+add_custom_command(TARGET ${EXECUTABLE_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+        "${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/resources"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
+        "${CMAKE_SOURCE_DIR}/resources"
+            "${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/resources"
+)
+
+
 
 
 # The CMake docs have some examples:
