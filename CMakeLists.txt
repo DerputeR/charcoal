@@ -44,9 +44,10 @@ endif()
 #                      DEPENDENCIES                      #
 ##########################################################
 
-set(FETCHCONTENT_UPDATES_DISCONNECTED ON CACHE CMAKE_BUILD_TOOL
+set(FETCHCONTENT_UPDATES_DISCONNECTED ON BOOL
     "If enabled, only fetch content the first time.
-    Future runs will not attempt to redownload.")
+    Future runs will not attempt to redownload."
+)
 include(FetchContent)
 
 FetchContent_Declare(
@@ -94,8 +95,8 @@ else()
         GIT_TAG         release-3.2.4
         EXCLUDE_FROM_ALL
     )
-    FetchContent_MakeAvailable(SDL3_image)
     FetchContent_MakeAvailable(SDL3)
+    FetchContent_MakeAvailable(SDL3_image)
 endif()
 
 # Dear ImGUI doesn't have its own CMakeLists.txt so we'll have to declare
@@ -222,23 +223,23 @@ target_compile_definitions(${EXECUTABLE_NAME} PRIVATE $<$<CONFIG:Debug>:DEBUG>)
 if (MSVC AND WIN32 AND NOT MSVC_VERSION VERSION_LESS 142)
     target_link_options(${EXECUTABLE_NAME} PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)
     target_compile_options(${EXECUTABLE_NAME} PRIVATE $<$<CONFIG:Debug>:/ZI>)
-elseif (CMAKE_BUILD_TYPE STREQUAL "Debug"
-        OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-    message("Charcoal: Building with build-type ${CMAKE_BUILD_TYPE}...")
-    if (MINGW)
-        message("Charcoal: **MINGW toolchain detected**")
-        # set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb -gdwarf-4")
-        # target_compile_options(Charcoal PRIVATE $<$<CONFIG:Debug>:"-g -ggdb -gdwarf-4">)
-        target_compile_options(${EXECUTABLE_NAME} PRIVATE $<$<CONFIG:Debug>:-ggdb -gdwarf-4>)
-        get_target_property(flags ${EXECUTABLE_NAME} COMPILE_OPTIONS)
-        message(STATUS "Charcoal compile options: ${flags}")
-    endif()
+    # elseif (CMAKE_BUILD_TYPE STREQUAL "Debug"
+    #         OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+    #     message("Charcoal: Building with build-type ${CMAKE_BUILD_TYPE}...")
+    #     if (MINGW)
+    #         message("Charcoal: **MINGW toolchain detected**")
+    #         # set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb -gdwarf-4")
+    #         # target_compile_options(Charcoal PRIVATE $<$<CONFIG:Debug>:"-g -ggdb -gdwarf-4">)
+    #         target_compile_options(${EXECUTABLE_NAME} PRIVATE $<$<CONFIG:Debug>:-ggdb -gdwarf-4>)
+    #         get_target_property(flags ${EXECUTABLE_NAME} COMPILE_OPTIONS)
+    #         message(STATUS "Charcoal compile options: ${flags}")
+    #     endif()
 endif()
 
 # Link to the actual SDL3 library.
 # target_link_libraries(Charcoal PUBLIC SDL3_image::SDL3_image)
 target_link_libraries(${EXECUTABLE_NAME} PUBLIC
-    SDK3_image::SDL3_image
+    SDL3_image::SDL3_image
     SDL3::SDL3
 )
 target_compile_features(${EXECUTABLE_NAME} PUBLIC cxx_std_23)
@@ -264,7 +265,7 @@ target_include_directories(${EXECUTABLE_NAME} PRIVATE "${imgui_SOURCE_DIR}/misc/
 target_include_directories(${EXECUTABLE_NAME} PRIVATE "glad/include")
 
 # Link to the library (GLM becomes a static library in this case)
-target_link_libraries(${EXECUTABLE_NAME} PUBLIC glm)
+target_link_libraries(${EXECUTABLE_NAME} PUBLIC glm::glm-header-only)
 
 # Installation rules
 include(GNUInstallDirs)

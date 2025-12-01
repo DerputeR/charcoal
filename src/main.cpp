@@ -37,7 +37,7 @@ static SDL_GLContext gl_context;
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     SDL_SetAppMetadata(APP_FULL_NAME, APP_VERSION, APP_PACKAGE);
-    SDL_SetLogPriority(SDL_LOG_CATEGORY_VIDEO, SDL_LOG_PRIORITY_DEBUG);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_VIDEO, SDL_LOG_PRIORITY_WARN);
     SDL_SetLogPriority(SDL_LOG_CATEGORY_RENDER, SDL_LOG_PRIORITY_DEBUG);
     SDL_SetLogPriority(SDL_LOG_CATEGORY_CUSTOM, SDL_LOG_PRIORITY_DEBUG);
 

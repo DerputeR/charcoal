@@ -1,7 +1,7 @@
 #include "renderer.h"
 #include "SDL3/SDL_log.h"
 #include "SDL3/SDL_surface.h"
-// #include "SDL3_image/SDL_image.h"
+#include "SDL3_image/SDL_image.h"
 #include "app_state.h"
 #include "shader_loader.h"
 #include <algorithm>
@@ -99,15 +99,15 @@ Renderer::Renderer(GLuint shader_program) :
     // load the texture data
     constexpr const char *crate_path = "resources/textures/crate.png";
     SDL_Surface *surface = nullptr;
-    // surface = IMG_Load(crate_path);
+    surface = IMG_Load(crate_path);
     if (surface == nullptr) {
         SDL_LogCritical(
                 SDL_LOG_CATEGORY_SYSTEM, "Unable to load \"%s\"", crate_path);
     } else {
         SDL_Surface *temp = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
         SDL_DestroySurface(surface);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surface->w, surface->h, 0,
-                GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, temp->w, temp->h, 0, GL_RGBA,
+                GL_UNSIGNED_BYTE, temp->pixels);
         SDL_DestroySurface(temp);
         glGenerateMipmap(GL_TEXTURE_2D);
     }
