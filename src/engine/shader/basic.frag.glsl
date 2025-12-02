@@ -8,5 +8,5 @@ out vec4 FragColor;
 
 void main() {
     // FragColor = vertex_color;
-    FragColor = texture(obj_texture, vertex_uv);
+    FragColor = texture(obj_texture, vertex_uv) * vertex_color;
 }
