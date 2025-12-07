@@ -1,10 +1,10 @@
 #include "renderer.h"
 #include "SDL3/SDL_log.h"
+#include "SDL3/SDL_pixels.h"
 #include "SDL3/SDL_surface.h"
 #include "SDL3_image/SDL_image.h"
 #include "app_state.h"
 #include "shader_loader.h"
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <format>
@@ -12,61 +12,6 @@
 #include <glm/vec4.hpp>
 
 namespace Charcoal {
-Vertex::Vertex() : position{0.0f, 0.0f, 0.0f}, rgb{0xFFFFFF}, uv{0.0f, 0.0f} {
-}
-
-Vertex::Vertex(const glm::vec3 &position) :
-        position{position}, rgb{0xFFFFFF}, uv{position.x, position.y} {
-}
-
-// TODO: clamp the rgb values
-Vertex::Vertex(const glm::vec3 &position, const glm::vec3 &rgb) :
-        position{position}, rgb{pack_normalized_rgb24_to_uint32(rgb)},
-        uv{position.x, position.y} {
-}
-
-Vertex::Vertex(const glm::vec3 &position, glm::uint32 rgb) :
-        position{position}, rgb{rgb}, uv{position.x, position.y} {
-}
-
-Vertex::Vertex(
-        const glm::vec3 &position, const glm::vec3 &rgb, const glm::vec2 &uv) :
-        position{position}, rgb{pack_normalized_rgb24_to_uint32(rgb)}, uv{uv} {
-}
-
-Vertex::Vertex(const glm::vec3 &position, glm::uint32 rgb,
-        const glm::vec2 &uv) : position{position}, rgb{rgb}, uv{uv} {
-}
-
-void Vertex::set_rgb(int r, int g, int b) {
-    r = std::clamp(r, 0, 255);
-    g = std::clamp(g, 0, 255);
-    b = std::clamp(b, 0, 255);
-    rgb = (r << 16) | (g << 8) | b;
-}
-
-glm::uint32 Vertex::pack_rgb24_to_uint32(int r, int g, int b) {
-    r = std::clamp(r, 0, 255);
-    g = std::clamp(g, 0, 255);
-    b = std::clamp(b, 0, 255);
-    glm::uint32 rgb = (r << 16) | (g << 8) | b;
-    return rgb;
-}
-
-glm::uint32 Vertex::pack_normalized_rgb24_to_uint32(float r, float g, float b) {
-    r = std::clamp(r, 0.0f, 1.0f);
-    g = std::clamp(g, 0.0f, 1.0f);
-    b = std::clamp(b, 0.0f, 1.0f);
-    int ri = glm::uround(r * 255.0f);
-    int gi = glm::uround(g * 255.0f);
-    int bi = glm::uround(b * 255.0f);
-    return pack_rgb24_to_uint32(ri, gi, bi);
-}
-
-glm::uint32 Vertex::pack_normalized_rgb24_to_uint32(const glm::vec3 rgb) {
-    return pack_normalized_rgb24_to_uint32(rgb.r, rgb.g, rgb.b);
-}
-
 Renderer::Renderer() :
         Renderer(Shader::ShaderLoader::create_program(
                 Shader::ShaderLoader::DEFAULT_VERT_SRC,
@@ -88,27 +33,38 @@ Renderer::Renderer(GLuint shader_program) :
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
-    // WIP: textures
-    glGenTextures(1, &texture); // this can be an array of textures
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
-    glTexParameteri(
-            GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    // load the texture data
-    constexpr const char *crate_path = "resources/textures/crate.png";
-    SDL_Surface *surface = nullptr;
-    surface = IMG_Load(crate_path);
-    if (surface == nullptr) {
-        SDL_LogCritical(
-                SDL_LOG_CATEGORY_SYSTEM, "Unable to load \"%s\"", crate_path);
-    } else {
-        SDL_Surface *temp = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
-        SDL_DestroySurface(surface);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, temp->w, temp->h, 0, GL_RGBA,
-                GL_UNSIGNED_BYTE, temp->pixels);
-        SDL_DestroySurface(temp);
+    // TODO: WIP: textures
+    constexpr const char *paths[2] = {
+            "resources/textures/crate.png", "resources/textures/glass.png"};
+    glGenTextures(2, &texture[0]); // this can be an array of textures
+    for (int i = 0; i < 2; i++) {
+        glBindTexture(GL_TEXTURE_2D, texture[i]);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
+        glTexParameteri(
+                GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        // load the texture data
+        SDL_Surface *initial_load = nullptr;
+        initial_load = IMG_Load(paths[i]);
+        if (initial_load == nullptr) {
+            SDL_LogCritical(
+                    SDL_LOG_CATEGORY_SYSTEM, "Unable to load \"%s\"", paths[i]);
+            initial_load = SDL_CreateSurface(2, 2, SDL_PIXELFORMAT_RGB24);
+            glm::uint32 *pixels =
+                    static_cast<glm::uint32 *>(initial_load->pixels);
+            pixels[0] = Vertex::pack_rgb24_to_uint32(255, 0, 255);
+            pixels[1] = Vertex::pack_rgb24_to_uint32(0, 0, 0);
+            pixels[2] = Vertex::pack_rgb24_to_uint32(255, 0, 255);
+            pixels[3] = Vertex::pack_rgb24_to_uint32(0, 0, 0);
+        }
+        SDL_Surface *converted =
+                SDL_ConvertSurface(initial_load, SDL_PIXELFORMAT_RGBA32);
+        SDL_DestroySurface(initial_load);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, converted->w, converted->h, 0,
+                GL_RGBA, GL_UNSIGNED_BYTE, converted->pixels);
+        SDL_DestroySurface(converted);
         glGenerateMipmap(GL_TEXTURE_2D);
     }
 }
@@ -213,7 +169,9 @@ void Renderer::render(AppState *app_state) {
         //     glUniform1f(texture_location, texture);
         // }
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture);
+        glBindTexture(GL_TEXTURE_2D, texture[0]);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, texture[1]);
 
         glBindVertexArray(vao);
         glDrawElements(GL_TRIANGLES, index_count, GL_UNSIGNED_INT, 0);

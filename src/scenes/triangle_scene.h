@@ -1,4 +1,3 @@
-#include "../engine/renderer.h"
 #include "../engine/scene.h"
 #include "../engine/time.h"
 
