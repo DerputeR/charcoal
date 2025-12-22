@@ -1,5 +1,6 @@
 #include "vertex.h"
 #include "glm/ext/scalar_common.hpp"
+#include <algorithm>
 
 namespace Charcoal {
 Vertex::Vertex() : position{0.0f, 0.0f, 0.0f}, rgb{0xFFFFFF}, uv{0.0f, 0.0f} {
