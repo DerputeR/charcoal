@@ -10,5 +10,7 @@ out vec4 FragColor;
 
 void main() {
     // FragColor = vertex_color;
-    FragColor = texture(obj_texture, vertex_uv) + (vec4(blend, blend, blend, 0.1) * texture(glass_texture, vertex_uv));
+    vec4 base = texture(obj_texture, vertex_uv);
+    vec4 overlay = texture(glass_texture, vertex_uv);
+    FragColor = mix(base, overlay, overlay.a * blend);
 }
