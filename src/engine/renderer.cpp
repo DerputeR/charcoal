@@ -151,6 +151,22 @@ void Renderer::render(AppState *app_state) {
     if (error == Error::none) {
         glUseProgram(shader_program);
         if (app_state != nullptr) {
+            if (app_state->time.get_frame_count() <= 1) {
+                // Assign the texture units to the samplers. this only needs to
+                // be done once before rendering
+                int obj_texture_loc =
+                        glGetUniformLocation(shader_program, "obj_texture");
+                if (obj_texture_loc > -1) {
+                    glUniform1i(obj_texture_loc, 0);
+                }
+
+                int glass_texture_loc =
+                        glGetUniformLocation(shader_program, "glass_texture");
+                if (glass_texture_loc > -1) {
+                    glUniform1i(glass_texture_loc, 1);
+                }
+            }
+
             // TODO: abstract uniform updating. might need a separate shader
             // program class to define this behavior
             float time_value =
@@ -160,6 +176,10 @@ void Renderer::render(AppState *app_state) {
                     glGetUniformLocation(shader_program, "offset");
             if (vertex_offset_location > -1) {
                 glUniform1f(vertex_offset_location, offset);
+            }
+            int blend_location = glGetUniformLocation(shader_program, "blend");
+            if (blend_location > -1) {
+                glUniform1f(blend_location, 0.5f + (std::sin(time_value * 2.0f) / 2.0));
             }
         }
 
