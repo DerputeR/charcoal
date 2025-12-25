@@ -21,7 +21,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>")
 
 # Prevent installing to system directories
-set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}" CACHE INTERNAL "")
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}" CACHE INTERNAL "")
+endif()
 
 # Platform-specific configurations
 # Apple - This is untested!
@@ -44,7 +46,7 @@ endif()
 #                      DEPENDENCIES                      #
 ##########################################################
 
-set(FETCHCONTENT_UPDATES_DISCONNECTED ON BOOL
+set(FETCHCONTENT_UPDATES_DISCONNECTED ON CACHE BOOL
     "If enabled, only fetch content the first time.
     Future runs will not attempt to redownload."
 )
@@ -69,8 +71,31 @@ FetchContent_MakeAvailable(imgui glm)
 # If this variable exists in the cache, its value will not be overwritten
 option(MYGAME_VENDORED "Use vendored libraries" OFF)
 set(SDLIMAGE_VENDORED ${MYGAME_VENDORED})
-set(CMAKE_PREFIX_PATH "/usr/local" CACHE PATH
-    "Custom prefix paths to search for libraries under")
+# if(NOT DEFINED CMAKE_PREFIX_PATH)
+#     set(CMAKE_PREFIX_PATH "/usr/local" CACHE PATH
+#         "Custom prefix paths to search for libraries under")
+# endif()
+
+# Disable unused image formats - do this BEFORE getting the dependency
+option(SDLIMAGE_ANI "Support loading ANI animations" OFF)
+option(SDLIMAGE_AVIF "Support loading AVIF images" OFF)
+option(SDLIMAGE_BMP "Support loading BMP images" OFF)
+option(SDLIMAGE_GIF "Support loading GIF images" OFF)
+option(SDLIMAGE_JPG "Support loading JPEG images" OFF)
+option(SDLIMAGE_JXL "Support loading JXL images" OFF)
+option(SDLIMAGE_LBM "Support loading LBM images" OFF)
+option(SDLIMAGE_PCX "Support loading PCX images" OFF)
+option(SDLIMAGE_PNG "Support loading PNG images" ON)
+option(SDLIMAGE_PNM "Support loading PNM images" OFF)
+option(SDLIMAGE_QOI "Support loading QOI images" OFF)
+option(SDLIMAGE_SVG "Support loading SVG images" OFF)
+option(SDLIMAGE_TGA "Support loading TGA images" OFF)
+option(SDLIMAGE_TIF "Support loading TIFF images" OFF)
+option(SDLIMAGE_WEBP "Support loading WEBP images" OFF)
+option(SDLIMAGE_XCF "Support loading XCF images" OFF)
+option(SDLIMAGE_XPM "Support loading XPM images" OFF)
+option(SDLIMAGE_XV "Support loading XV images" OFF)
+
 
 # Note: An older version of this CMakeLists.txt used GLFW as a dependency.
 # This is no longer the case, but it's not a bad idea to specify library mode.
@@ -118,26 +143,6 @@ set(IMGUI_BACKEND_SOURCES "${imgui_SOURCE_DIR}/backends/imgui_impl_sdl3.cpp"
 set(IMGUI_DEBUG "${imgui_SOURCE_DIR}/misc/debuggers/imgui.natvis"
                 "${imgui_SOURCE_DIR}/misc/debuggers/imgui.natstepfilter"
 )
-
-# Disable unused image formats
-option(SDLIMAGE_ANI "Support loading ANI animations" OFF)
-option(SDLIMAGE_AVIF "Support loading AVIF images" OFF)
-option(SDLIMAGE_BMP "Support loading BMP images" OFF)
-option(SDLIMAGE_GIF "Support loading GIF images" OFF)
-option(SDLIMAGE_JPG "Support loading JPEG images" OFF)
-option(SDLIMAGE_JXL "Support loading JXL images" OFF)
-option(SDLIMAGE_LBM "Support loading LBM images" OFF)
-option(SDLIMAGE_PCX "Support loading PCX images" OFF)
-option(SDLIMAGE_PNG "Support loading PNG images" ON)
-option(SDLIMAGE_PNM "Support loading PNM images" OFF)
-option(SDLIMAGE_QOI "Support loading QOI images" OFF)
-option(SDLIMAGE_SVG "Support loading SVG images" OFF)
-option(SDLIMAGE_TGA "Support loading TGA images" OFF)
-option(SDLIMAGE_TIF "Support loading TIFF images" OFF)
-option(SDLIMAGE_WEBP "Support loading WEBP images" OFF)
-option(SDLIMAGE_XCF "Support loading XCF images" OFF)
-option(SDLIMAGE_XPM "Support loading XPM images" OFF)
-option(SDLIMAGE_XV "Support loading XV images" OFF)
 
 
 ##########################################################
