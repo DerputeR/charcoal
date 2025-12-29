@@ -185,7 +185,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     // Styling
     ImGuiStyle &style = ImGui::GetStyle();
     style.ScaleAllSizes(app_state->config.dpi_scaling);
-    style.FontScaleDpi = app_state->config.dpi_scaling;
+    // available only in >= 1.92, experimental api
+    // style.FontScaleDpi = app_state->config.dpi_scaling;
 
     // Setup Platform/Renderer backends
     ImGui_ImplSDL3_InitForOpenGL(window, gl_context);

@@ -35,7 +35,7 @@ Renderer::Renderer(GLuint shader_program) :
 
     // TODO: WIP: textures
     constexpr const char *paths[2] = {
-            "resources/textures/crate.png", "resources/textures/glass.png"};
+            "./resources/textures/crate.png", "./resources/textures/glass.png"};
     glGenTextures(2, &texture[0]); // this can be an array of textures
     for (int i = 0; i < 2; i++) {
         glBindTexture(GL_TEXTURE_2D, texture[i]);
@@ -179,7 +179,8 @@ void Renderer::render(AppState *app_state) {
             }
             int blend_location = glGetUniformLocation(shader_program, "blend");
             if (blend_location > -1) {
-                glUniform1f(blend_location, 0.5f + (std::sin(time_value * 2.0f) / 2.0));
+                glUniform1f(blend_location,
+                        0.5f + (std::sin(time_value * 2.0f) / 2.0));
             }
         }
 

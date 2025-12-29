@@ -1,9 +1,12 @@
 # Dependencies
 
-- SDL release-3.2.16 (fetched)
-- Dear ImGui 1.91.9b-docking (fetched)
+This project primarily uses [vcpkg](https://learn.microsoft.com/en-us/vcpkg/get_started/get-started) to manage external dependencies.
+
+- sdl3 (>= 3.2.28)
+- sdl3-image (>= 3.2.4)
+- imgui (>= 1.91.9, docking, sdl3 + opengl3 bindings)
 - glad (included)
-- GLM 1.0.1 (fetched)
+- glm (>= 1.0.2)
 
 # Supported systems
 
@@ -14,7 +17,7 @@ This project has been verified to build on:
 
 This project _should_ work on a variety of other systems, but this has not been tested yet.
 
-# Installation
+# Build
 
 This repo makes use of Git LFS to fetch and store resources (graphics, audio, etc.). Ensure you have Git LFS installed before working with this project!
 
@@ -37,7 +40,7 @@ I recommend using Ninja as the build system and MSVC 2022 x64 as the compiler, b
 2. Download and install [Ninja](https://github.com/ninja-build/ninja/wiki/Pre-built-Ninja-packages)
 3. Download and install [Microsoft Visual Studio Community Edition](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=Community&channel=Release&version=VS2022&source=VSLandingPage&cid=2030&passive=false)
     - Ensure that the "Desktop development with C++" workload is selected with your installation.
-4. Open a Visual Studio Developer terminal instance in the root directory of the project (here, using the VS Developer Powershell profile added to Windows Terminal) and run the following:
+4. Open a Visual Studio Developer terminal instance in the root directory of the project (here, using the VS Developer PowerShell profile added to Windows Terminal) and run the following:
 
     ```powershell
     mkdir build &&
