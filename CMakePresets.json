@@ -1,5 +1,5 @@
 {
-    "version": 10,
+    "version": 3,
     "configurePresets": [
         {
             "name": "default",
@@ -10,11 +10,6 @@
         {
             "name": "mingw",
             "inherits": "default"
-        },
-        {
-            "name": "vs",
-            "inherits": "default",
-            "generator": "Visual Studio 17 2022"
         }
     ]
 }
