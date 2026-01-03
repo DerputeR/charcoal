@@ -8,8 +8,8 @@
 #include <cmath>
 #include <cstddef>
 #include <format>
-#include <glm/gtc/integer.hpp>
-#include <glm/vec4.hpp>
+#include "vertex.h"
+#include "color.h"
 
 namespace Charcoal {
 Renderer::Renderer() :
@@ -35,7 +35,7 @@ Renderer::Renderer(GLuint shader_program) :
 
     // TODO: WIP: textures
     constexpr const char *paths[2] = {
-            "./resources/textures/crate.png", "./resources/textures/glass.png"};
+            "./resources/textures/crate.png", "./resources/textures/glass.png.disabled"};
     glGenTextures(2, &texture[0]); // this can be an array of textures
     for (int i = 0; i < 2; i++) {
         glBindTexture(GL_TEXTURE_2D, texture[i]);
@@ -51,13 +51,14 @@ Renderer::Renderer(GLuint shader_program) :
         if (initial_load == nullptr) {
             SDL_LogCritical(
                     SDL_LOG_CATEGORY_SYSTEM, "Unable to load \"%s\": %s", paths[i], SDL_GetError());
-            initial_load = SDL_CreateSurface(2, 2, SDL_PIXELFORMAT_RGB24);
+            initial_load = SDL_CreateSurface(
+                    2, 2, SDL_PixelFormat::SDL_PIXELFORMAT_RGBA32);
             glm::uint32 *pixels =
                     static_cast<glm::uint32 *>(initial_load->pixels);
-            pixels[0] = Vertex::pack_rgb24_to_uint32(255, 0, 255);
-            pixels[1] = Vertex::pack_rgb24_to_uint32(0, 0, 0);
-            pixels[2] = Vertex::pack_rgb24_to_uint32(255, 0, 255);
-            pixels[3] = Vertex::pack_rgb24_to_uint32(0, 0, 0);
+            pixels[0] = Color::pack_rgba32(255, 0, 255, 255);
+            pixels[1] = Color::pack_rgba32(0, 0, 0, 255);
+            pixels[2] = Color::pack_rgba32(0, 0, 0, 255);
+            pixels[3] = Color::pack_rgba32(255, 0, 255, 255);
         }
         SDL_Surface *converted =
                 SDL_ConvertSurface(initial_load, SDL_PIXELFORMAT_RGBA32);

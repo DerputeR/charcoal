@@ -86,6 +86,7 @@ set(ENGINE_SOURCES
     "src/engine/window_utils.cpp"
     "src/engine/vertex.cpp"
     "src/engine/mesh.cpp"
+    "src/engine/color.cpp"
 )
 
 # Shader sources; we need to track their changes
