@@ -50,7 +50,7 @@ Renderer::Renderer(GLuint shader_program) :
         initial_load = IMG_Load(paths[i]);
         if (initial_load == nullptr) {
             SDL_LogCritical(
-                    SDL_LOG_CATEGORY_SYSTEM, "Unable to load \"%s\"", paths[i]);
+                    SDL_LOG_CATEGORY_SYSTEM, "Unable to load \"%s\": %s", paths[i], SDL_GetError());
             initial_load = SDL_CreateSurface(2, 2, SDL_PIXELFORMAT_RGB24);
             glm::uint32 *pixels =
                     static_cast<glm::uint32 *>(initial_load->pixels);
