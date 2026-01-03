@@ -185,6 +185,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     // Styling
     ImGuiStyle &style = ImGui::GetStyle();
     style.ScaleAllSizes(app_state->config.dpi_scaling);
+    io.FontGlobalScale = app_state->config.dpi_scaling;
     // available only in >= 1.92, experimental api
     // style.FontScaleDpi = app_state->config.dpi_scaling;
 

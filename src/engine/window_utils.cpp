@@ -34,6 +34,8 @@ void handle_window_rescale(
         ImGuiStyle &style = ImGui::GetStyle();
         style.ScaleAllSizes(1.0f / old_scaling);
         style.ScaleAllSizes(new_scale);
+        ImGuiIO &io = ImGui::GetIO();
+        io.FontGlobalScale = new_scale;
         // available only in >= 1.92, experimental api
         // style.FontScaleDpi = new_scale;
     }
