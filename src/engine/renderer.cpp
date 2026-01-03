@@ -118,7 +118,7 @@ void Renderer::submit_mesh(const Mesh &mesh) {
                 sizeof(Vertex),
                 reinterpret_cast<GLvoid *>(offsetof(Vertex, position)));
         glVertexAttribIPointer(rgb_index, 1, GL_UNSIGNED_INT, sizeof(Vertex),
-                reinterpret_cast<GLvoid *>(offsetof(Vertex, rgb)));
+                reinterpret_cast<GLvoid *>(offsetof(Vertex, color)));
         glVertexAttribPointer(uv_index, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
                 reinterpret_cast<GLvoid *>(offsetof(Vertex, uv)));
         glEnableVertexAttribArray(position_index);

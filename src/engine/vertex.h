@@ -11,16 +11,16 @@ namespace Charcoal {
  */
 struct Vertex {
     glm::vec3 position;
-    glm::uint32 rgb;
+    glm::uint32 color;
     glm::vec2 uv;
 
     Vertex();
     Vertex(const glm::vec3 &position);
-    Vertex(const glm::vec3 &position, const glm::vec3 &rgb);
-    Vertex(const glm::vec3 &position, glm::uint32 rgb);
-    Vertex(const glm::vec3 &position, const glm::vec3 &rgb,
+    Vertex(const glm::vec3 &position, const glm::vec3 &color);
+    Vertex(const glm::vec3 &position, glm::uint32 color);
+    Vertex(const glm::vec3 &position, const glm::vec3 &color,
             const glm::vec2 &uv);
-    Vertex(const glm::vec3 &position, glm::uint32 rgb, const glm::vec2 &uv);
+    Vertex(const glm::vec3 &position, glm::uint32 color, const glm::vec2 &uv);
 };
 
 } // namespace Charcoal
