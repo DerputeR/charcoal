@@ -9,7 +9,22 @@
         },
         {
             "name": "mingw",
-            "inherits": "default"
+            "inherits": "default",
+            "toolchainFile": "${sourceDir}/TC-mingw.cmake",
+            "cacheVariables": {
+                "VCPKG_TARGET_TRIPLET": "x64-mingw-dynamic",
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "default",
+            "configurePreset": "default"
+        },
+        {
+            "name": "mingw",
+            "configurePreset": "mingw"
         }
     ]
 }
