@@ -10,7 +10,10 @@
         "sdl3-binding"
       ]
     },
-    "sdl3",
+    {
+      "name": "sdl3",
+      "version>=": "3.4.0"
+    },
     {
       "name": "sdl3-image",
       "features": [
@@ -18,5 +21,5 @@
       ]
     }
   ],
-  "builtin-baseline": "5d57f5a0a5469a23e005fc79a7c1814ab4fc967e"
+  "builtin-baseline": "25b458671af03578e6a34edd8f0d1ac85e084df4"
 }
