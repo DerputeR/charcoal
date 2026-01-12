@@ -211,12 +211,27 @@ target_include_directories(${EXECUTABLE_NAME} PRIVATE "${imgui_SOURCE_DIR}/misc/
 # Copy resources
 add_custom_command(TARGET ${EXECUTABLE_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory
-        "${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/resources"
+        "$<TARGET_FILE_DIR:${EXECUTABLE_NAME}>/resources"
     COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
         "${CMAKE_SOURCE_DIR}/resources"
-            "${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/resources"
+            "$<TARGET_FILE_DIR:${EXECUTABLE_NAME}>/resources"
     VERBATIM
 )
+
+##########################################################
+#                  POST-BUILD COMMANDS                   #
+##########################################################
+
+if (MINGW AND VCPKG_TARGET_TRIPLET)
+    add_custom_command(TARGET ${EXECUTABLE_NAME} POST_BUILD
+        COMMAND
+            ${CMAKE_COMMAND} -E copy_directory
+            "$<TARGET_FILE_DIR:${EXECUTABLE_NAME}>/vcpkg_installed/${VCPKG_TARGET_TRIPLET}$<$<CONFIG:Debug>:/debug>/bin"
+            "$<TARGET_FILE_DIR:${EXECUTABLE_NAME}>"
+        VERBATIM)
+else()
+    message(WARN "You will need to manually copy all dependency .dll files to the directory adjacent to ${EXECUTABLE_NAME}")
+endif()
 
 # The CMake docs have some examples:
 # https://cmake.org/cmake/help/latest/command/install.html#example-install-targets-with-per-artifact-components
