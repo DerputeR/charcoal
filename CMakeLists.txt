@@ -8,6 +8,8 @@
 
 cmake_minimum_required(VERSION 3.31...4.0)
 
+set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>")
+
 project(Charcoal VERSION 0.1.0
     DESCRIPTION "A terrible, inefficient, but custom-made game engine"
     LANGUAGES C CXX)
@@ -147,10 +149,10 @@ target_sources(${EXECUTABLE_NAME} PRIVATE
 # For debugging
 target_sources(${EXECUTABLE_NAME} PRIVATE $<$<CONFIG:Debug>:${IMGUI_DEBUG}>)
 target_compile_definitions(${EXECUTABLE_NAME} PRIVATE $<$<CONFIG:Debug>:DEBUG>)
-if (MSVC AND WIN32 AND NOT MSVC_VERSION VERSION_LESS 142)
-    target_link_options(${EXECUTABLE_NAME} PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)
-    target_compile_options(${EXECUTABLE_NAME} PRIVATE $<$<CONFIG:Debug>:/ZI>)
-endif()
+# if (MSVC AND WIN32 AND NOT MSVC_VERSION VERSION_LESS 142)
+    # target_link_options(${EXECUTABLE_NAME} PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)
+    # target_compile_options(${EXECUTABLE_NAME} PRIVATE $<$<CONFIG:Debug>:/ZI>)
+# endif()
 
 # link libraries
 target_link_libraries(${EXECUTABLE_NAME} PUBLIC SDL3_image::SDL3_image)
