@@ -39,30 +39,37 @@ endif()
 #                      DEPENDENCIES                      #
 ##########################################################
 
-find_package(imgui CONFIG REQUIRED)
+set(FETCHCONTENT_UPDATES_DISCONNECTED ON CACHE BOOL "If enabled, only fetch content the first time. Future runs will not attempt to redownload.")
+include(FetchContent)
+FetchContent_Declare(
+    imgui
+    GIT_REPOSITORY  https://github.com/ocornut/imgui
+    GIT_TAG         v1.92.5-docking
+)
+FetchContent_MakeAvailable(imgui)
+
 find_package(glm CONFIG REQUIRED)
 find_package(SDL3 CONFIG REQUIRED)
 
 # Dear ImGUI doesn't have its own CMakeLists.txt so we'll have to declare
 # which sources we're using so we can embed it directly into the executable
-# set(IMGUI_SOURCES "${imgui_SOURCE_DIR}/imgui.cpp"
-#                   "${imgui_SOURCE_DIR}/imgui_demo.cpp"
-#                   "${imgui_SOURCE_DIR}/imgui_draw.cpp"
-#                   "${imgui_SOURCE_DIR}/imgui_tables.cpp"
-#                   "${imgui_SOURCE_DIR}/imgui_widgets.cpp"
-#                   "${imgui_SOURCE_DIR}/misc/cpp/imgui_stdlib.cpp"
-# )
-#
-# # We will also need to do so for the backend sources
-# set(IMGUI_BACKEND_SOURCES "${imgui_SOURCE_DIR}/backends/imgui_impl_sdl3.cpp"
-#                           "${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp"
-# )
-#
-# # This is recommended for debugging in VS
-# set(IMGUI_DEBUG "${imgui_SOURCE_DIR}/misc/debuggers/imgui.natvis"
-#                 "${imgui_SOURCE_DIR}/misc/debuggers/imgui.natstepfilter"
-# )
-#
+set(IMGUI_SOURCES "${imgui_SOURCE_DIR}/imgui.cpp"
+                  "${imgui_SOURCE_DIR}/imgui_demo.cpp"
+                  "${imgui_SOURCE_DIR}/imgui_draw.cpp"
+                  "${imgui_SOURCE_DIR}/imgui_tables.cpp"
+                  "${imgui_SOURCE_DIR}/imgui_widgets.cpp"
+                  "${imgui_SOURCE_DIR}/misc/cpp/imgui_stdlib.cpp"
+)
+
+# We will also need to do so for the backend sources
+set(IMGUI_BACKEND_SOURCES "${imgui_SOURCE_DIR}/backends/imgui_impl_sdl3.cpp"
+                          "${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp"
+)
+
+# This is recommended for debugging in VS
+set(IMGUI_DEBUG "${imgui_SOURCE_DIR}/misc/debuggers/imgui.natvis"
+                "${imgui_SOURCE_DIR}/misc/debuggers/imgui.natstepfilter"
+)
 
 ##########################################################
 #                 SOURCE PRE-PROCESSING                  #
@@ -138,8 +145,8 @@ endif()
 target_sources(${EXECUTABLE_NAME} PRIVATE
     "src/main.cpp"
     "glad/src/glad.c"
-    # ${IMGUI_SOURCES}
-    # ${IMGUI_BACKEND_SOURCES}
+    ${IMGUI_SOURCES}
+    ${IMGUI_BACKEND_SOURCES}
     ${ENGINE_SOURCES}
     ${SCENE_SOURCES}
     # TODO: Apple iOS support via src/iosLaunchScreen.storyboard
@@ -156,7 +163,6 @@ target_compile_definitions(${EXECUTABLE_NAME} PRIVATE $<$<CONFIG:Debug>:DEBUG>)
 # link libraries
 # target_link_libraries(${EXECUTABLE_NAME} PUBLIC SDL3_image::SDL3_image)
 target_link_libraries(${EXECUTABLE_NAME} PUBLIC SDL3::SDL3)
-target_link_libraries(${EXECUTABLE_NAME} PUBLIC imgui::imgui)
 target_link_libraries(${EXECUTABLE_NAME} PUBLIC glm::glm-header-only)
 target_include_directories(${EXECUTABLE_NAME} PRIVATE "glad/include")
 target_include_directories(${EXECUTABLE_NAME} PRIVATE "${imgui_SOURCE_DIR}")

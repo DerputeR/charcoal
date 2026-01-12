@@ -14,13 +14,12 @@
 
 ## Libraries
 
-All of these, with exception of `glad`, are managed by vcpkg.
+Unless noted, libraries are handled by vcpkg.
 
-- sdl3 (>= 3.2.28)
-- sdl3-image (>= 3.2.4, png)
-- imgui (>= 1.91.9, docking, sdl3 + opengl3 bindings)
-- glad (included)
+- sdl3 (>= 3.4.0)
 - glm (>= 1.0.2)
+- imgui (FetchContent; 1.91.9-docking)
+- glad (included)
 
 ## Graphics API
 
