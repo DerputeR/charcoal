@@ -8,6 +8,8 @@
 
 cmake_minimum_required(VERSION 3.31...4.0)
 
+set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>")
+
 project(Charcoal VERSION 0.1.0
     DESCRIPTION "A terrible, inefficient, but custom-made game engine"
     LANGUAGES C CXX)
@@ -39,7 +41,6 @@ endif()
 
 find_package(imgui CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
-find_package(SDL3_image CONFIG REQUIRED)
 find_package(SDL3 CONFIG REQUIRED)
 
 # Dear ImGUI doesn't have its own CMakeLists.txt so we'll have to declare
@@ -147,13 +148,13 @@ target_sources(${EXECUTABLE_NAME} PRIVATE
 # For debugging
 target_sources(${EXECUTABLE_NAME} PRIVATE $<$<CONFIG:Debug>:${IMGUI_DEBUG}>)
 target_compile_definitions(${EXECUTABLE_NAME} PRIVATE $<$<CONFIG:Debug>:DEBUG>)
-if (MSVC AND WIN32 AND NOT MSVC_VERSION VERSION_LESS 142)
-    target_link_options(${EXECUTABLE_NAME} PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)
-    target_compile_options(${EXECUTABLE_NAME} PRIVATE $<$<CONFIG:Debug>:/ZI>)
-endif()
+# if (MSVC AND WIN32 AND NOT MSVC_VERSION VERSION_LESS 142)
+# target_link_options(${EXECUTABLE_NAME} PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)
+# target_compile_options(${EXECUTABLE_NAME} PRIVATE $<$<CONFIG:Debug>:/ZI>)
+# endif()
 
 # link libraries
-target_link_libraries(${EXECUTABLE_NAME} PUBLIC SDL3_image::SDL3_image)
+# target_link_libraries(${EXECUTABLE_NAME} PUBLIC SDL3_image::SDL3_image)
 target_link_libraries(${EXECUTABLE_NAME} PUBLIC SDL3::SDL3)
 target_link_libraries(${EXECUTABLE_NAME} PUBLIC imgui::imgui)
 target_link_libraries(${EXECUTABLE_NAME} PUBLIC glm::glm-header-only)
@@ -163,45 +164,13 @@ target_include_directories(${EXECUTABLE_NAME} PRIVATE "${imgui_SOURCE_DIR}/backe
 target_include_directories(${EXECUTABLE_NAME} PRIVATE "${imgui_SOURCE_DIR}/misc/cpp")
 
 # Installation rules
-# include(GNUInstallDirs)
-# install(TARGETS
-#             ${EXECUTABLE_NAME}
-#         RUNTIME
-#             DESTINATION ${CMAKE_INSTALL_BINDIR}
-#         LIBRARY
-#             DESTINATION ${CMAKE_INSTALL_LIBDIR}
-#         ARCHIVE
-#             DESTINATION ${CMAKE_INSTALL_LIBDIR}
-# )
-#
-# if (TARGET SDL3-shared)
-#     message("Configuring SDL-shared installation")
-#     install(TARGETS
-#                 SDL3-shared
-#         RUNTIME
-#             DESTINATION ${CMAKE_INSTALL_BINDIR}
-#         LIBRARY
-#             DESTINATION ${CMAKE_INSTALL_LIBDIR}
-#         ARCHIVE
-#             DESTINATION ${CMAKE_INSTALL_LIBDIR}
-#     )
-# endif()
-#
-# if (TARGET SDL3-static)
-#     message("Configuring SDL-static installation")
-#     install(TARGETS
-#                 SDL3-static
-#         RUNTIME
-#             DESTINATION ${CMAKE_INSTALL_BINDIR}
-#         LIBRARY
-#             DESTINATION ${CMAKE_INSTALL_LIBDIR}
-#         ARCHIVE
-#             DESTINATION ${CMAKE_INSTALL_LIBDIR}
-#     )
-# endif()
-#
-# RPATH mangling
-# TODO (figure out how we're meant to do installs on Linux)
+# TODO
+# CMake docs have some examples:
+# https://cmake.org/cmake/help/latest/command/install.html#example-install-targets-with-per-artifact-components
+# https://cmake.org/cmake/help/latest/command/install.html#example-install-targets-to-per-config-destinations
+# install(TARGETS Charcoal
+#         CONFIGURATIONS Release
+#         RUNTIME DESTINATION "bin")
 
 
 ##########################################################
