@@ -197,15 +197,17 @@ add_custom_command(TARGET ${EXECUTABLE_NAME} POST_BUILD
 #                  POST-BUILD COMMANDS                   #
 ##########################################################
 
-if (MINGW AND VCPKG_TARGET_TRIPLET)
-    add_custom_command(TARGET ${EXECUTABLE_NAME} POST_BUILD
+if (MINGW)
+    if (VCPKG_TARGET_TRIPLET)
+        add_custom_command(TARGET ${EXECUTABLE_NAME} POST_BUILD
         COMMAND
             ${CMAKE_COMMAND} -E copy_directory
             "$<TARGET_FILE_DIR:${EXECUTABLE_NAME}>/vcpkg_installed/${VCPKG_TARGET_TRIPLET}$<$<CONFIG:Debug>:/debug>/bin"
             "$<TARGET_FILE_DIR:${EXECUTABLE_NAME}>"
         VERBATIM)
-else()
-    message(WARN "You will need to manually copy all dependency .dll files to the directory adjacent to ${EXECUTABLE_NAME}")
+    else()
+        message(WARNING "You will need to manually copy all dependency .dll files to the directory adjacent to ${EXECUTABLE_NAME}")
+    endif()
 endif()
 
 # The CMake docs have some examples:
