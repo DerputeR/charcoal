@@ -3,6 +3,7 @@
 #include <SDL3/SDL_video.h>
 #include <glad/glad.h>
 #include <imgui.h>
+#include "gui/debug_gui.h"
 
 namespace Charcoal {
 
@@ -31,11 +32,11 @@ void handle_window_rescale(
 
     // todo: this might be buggy
     if (new_scale != old_scaling) {
-        ImGuiStyle &style = ImGui::GetStyle();
-        style.ScaleAllSizes(1.0f / old_scaling);
+        ImGuiStyle style = Gui::DebugGui::default_style();
         style.ScaleAllSizes(new_scale);
         ImGuiIO &io = ImGui::GetIO();
         io.FontGlobalScale = new_scale;
+        ImGui::GetStyle() = style;
         // available only in >= 1.92, experimental api
         // style.FontScaleDpi = new_scale;
     }

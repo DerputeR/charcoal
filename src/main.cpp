@@ -30,7 +30,6 @@
 
 #include "app_info.h"
 
-static Charcoal::Gui::DebugGui debug_gui;
 static std::unique_ptr<Charcoal::Renderer> renderer;
 static SDL_Window *window;
 static SDL_GLContext gl_context;
@@ -244,7 +243,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     renderer->render(app_state);
 
     // draw the GUI
-    debug_gui.draw(app_state);
+    app_state->debug_gui.draw(app_state);
 
     // display the render
     SDL_GL_SwapWindow(window);

@@ -1,11 +1,12 @@
 #include "debug_gui.h"
+#include "../app_state.h"
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
 #include <imgui_impl_sdl3.h>
 #include <SDL3/SDL_log.h>
 
 namespace Charcoal::Gui {
-void DebugGui::draw(AppState* app_state) {
+void DebugGui::draw(AppState *app_state) {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL3_NewFrame();
     ImGui::NewFrame();
@@ -33,5 +34,10 @@ void DebugGui::draw_fps(bool *show) {
                 1000.0f / io.Framerate);
     }
     ImGui::End();
+}
+
+ImGuiStyle DebugGui::default_style() {
+    ImGuiStyle style = ImGuiStyle();
+    return style;
 }
 } // namespace Charcoal::Gui
