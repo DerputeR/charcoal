@@ -41,7 +41,7 @@ endif()
 
 find_package(imgui CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
-find_package(SDL3_image CONFIG REQUIRED)
+# find_package(SDL3_image CONFIG REQUIRED)
 find_package(SDL3 CONFIG REQUIRED)
 
 # Dear ImGUI doesn't have its own CMakeLists.txt so we'll have to declare
@@ -155,7 +155,7 @@ target_compile_definitions(${EXECUTABLE_NAME} PRIVATE $<$<CONFIG:Debug>:DEBUG>)
 # endif()
 
 # link libraries
-target_link_libraries(${EXECUTABLE_NAME} PUBLIC SDL3_image::SDL3_image)
+# target_link_libraries(${EXECUTABLE_NAME} PUBLIC SDL3_image::SDL3_image)
 target_link_libraries(${EXECUTABLE_NAME} PUBLIC SDL3::SDL3)
 target_link_libraries(${EXECUTABLE_NAME} PUBLIC imgui::imgui)
 target_link_libraries(${EXECUTABLE_NAME} PUBLIC glm::glm-header-only)

@@ -1,12 +1,11 @@
 # Dependencies
 
-This project primarily uses [vcpkg](https://learn.microsoft.com/en-us/vcpkg/get_started/get-started) to manage external dependencies.
+This project uses [vcpkg](https://learn.microsoft.com/en-us/vcpkg/get_started/get-started) to manage some external dependencies.
 
 - sdl3 (>= 3.4.0)
-- sdl3-image (>= 3.2.4)
-- imgui (>= 1.91.9, docking, sdl3 + opengl3 bindings)
 - glad (included)
 - glm (>= 1.0.2)
+- imgui (>= 1.91.9, docking, sdl3 + opengl3 bindings)
 
 # Supported systems
 

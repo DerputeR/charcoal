@@ -2,7 +2,6 @@
 #include "SDL3/SDL_log.h"
 #include "SDL3/SDL_pixels.h"
 #include "SDL3/SDL_surface.h"
-#include "SDL3_image/SDL_image.h"
 #include "app_state.h"
 #include "shader_loader.h"
 #include <cmath>
@@ -47,7 +46,8 @@ Renderer::Renderer(GLuint shader_program) :
 
         // load the texture data
         SDL_Surface *initial_load = nullptr;
-        initial_load = IMG_Load(paths[i]);
+        initial_load = SDL_LoadPNG(paths[i]);
+        //initial_load = IMG_Load(paths[i]);
         if (initial_load == nullptr) {
             SDL_LogCritical(
                     SDL_LOG_CATEGORY_SYSTEM, "Unable to load \"%s\": %s", paths[i], SDL_GetError());
