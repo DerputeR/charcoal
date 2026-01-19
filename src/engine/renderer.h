@@ -1,45 +1,12 @@
 #pragma once
 #include "app_state.h"
+#include "mesh.h"
 #include <glad/glad.h>
+#include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <string>
-#include <vector>
 
 namespace Charcoal {
-
-/**
- * @class Vertex
- * @brief Defines a Vertex, the base data structure to be submitted to shaders.
- *
- */
-struct Vertex {
-    glm::vec3 position;
-    glm::uint32 rgb;
-
-    Vertex();
-    Vertex(const glm::vec3 &position);
-    Vertex(const glm::vec3 &position, const glm::vec3 &rgb);
-    Vertex(const glm::vec3 &position, glm::uint32 rgb);
-
-    /**
-     * @brief Helper class to set vertex color using integer RGB representation
-     * @param r Clamped to [0, 255]
-     * @param g Clamped to [0, 255]
-     * @param b Clamped to [0, 255]
-     */
-    void set_rgb(int r, int g, int b);
-};
-
-/**
- * @class Mesh
- * @brief Defines a Mesh, which is a collection of triangles defined by their
- * vertices and the indices which dictate their usage.
- *
- */
-struct Mesh {
-    std::vector<Vertex> verts;
-    std::vector<int> indices;
-};
 
 /**
  * @class Renderer
@@ -58,6 +25,7 @@ public:
         invalid_vbo,
         invalid_vao,
         invalid_ebo,
+        opengl_error,
     };
 
 private:
@@ -69,6 +37,9 @@ private:
     // TODO: map attributes dynamically, lookup per shader
     GLint position_index;
     GLint rgb_index;
+    GLint uv_index;
+    // TODO: figure out how to do textures properly
+    GLuint texture[2];
     Error error;
     std::string error_msg;
     void set_error(Error e, const std::string &msg);

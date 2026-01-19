@@ -1,5 +1,11 @@
-mkdir -p build/mingw &&
-    cd build/mingw &&
-    cmake -DCMAKE_TOOLCHAIN_FILE=./TC-mingw.cmake -DCMAKE_BUILD_TYPE=Debug -G Ninja ../.. &&
-    cmake --build . &&
-    cp compile_commands.json ../compile_commands.json
+#!/bin/bash
+
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
+
+if [[ ! -f "${SCRIPT_DIR}/build/mingw/CMakeCache.txt" ]]; then
+    cmake --preset=mingw
+fi
+
+if [[ -f "${SCRIPT_DIR}/build/mingw/CMakeCache.txt" ]]; then
+    cmake --build --preset=mingw
+fi

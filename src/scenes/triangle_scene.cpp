@@ -1,6 +1,9 @@
 #include "triangle_scene.h"
 
 namespace Charcoal {
+TriangleScene::TriangleScene() {
+}
+
 TriangleScene::~TriangleScene() {
 }
 

@@ -1,16 +1,17 @@
 #include "window_utils.h"
 #include <SDL3/SDL_log.h>
 #include <SDL3/SDL_video.h>
-#include <imgui.h>
 #include <glad/glad.h>
+#include <imgui.h>
+#include "gui/debug_gui.h"
 
 namespace Charcoal {
 
 // todo: handle scaling update detection separately
-// todo: allow programmatic rescaling (i.e. via console command or settings menu)
-// todo: allow changing window dpi scaling in-app
-void handle_window_rescale(SDL_Window *window, AppState *app_state, int newX, int newY) {
-    
+// todo: allow programmatic rescaling (i.e. via console command or settings
+// menu) todo: allow changing window dpi scaling in-app
+void handle_window_rescale(
+        SDL_Window *window, AppState *app_state, int newX, int newY) {
     float new_scale = SDL_GetWindowDisplayScale(window);
     if (new_scale == 0) {
         SDL_LogError(SDL_LOG_CATEGORY_VIDEO,
@@ -31,17 +32,18 @@ void handle_window_rescale(SDL_Window *window, AppState *app_state, int newX, in
 
     // todo: this might be buggy
     if (new_scale != old_scaling) {
-        ImGuiStyle &style = ImGui::GetStyle();
-        style.ScaleAllSizes(1.0f / old_scaling);
+        ImGuiStyle style = Gui::DebugGui::default_style();
         style.ScaleAllSizes(new_scale);
-        style.FontScaleDpi = new_scale;
+        ImGuiIO &io = ImGui::GetIO();
+        io.FontGlobalScale = new_scale;
+        ImGui::GetStyle() = style;
+        // available only in >= 1.92, experimental api
+        // style.FontScaleDpi = new_scale;
     }
-    
+
     SDL_LogInfo(SDL_LOG_CATEGORY_VIDEO,
             "Window size changed to %d x %d (%d x %d with DPI scale %.3f)",
-            newX, newY,
-            app_state->config.resolution.x,
-            app_state->config.resolution.y,
-            app_state->config.dpi_scaling);
+            newX, newY, app_state->config.resolution.x,
+            app_state->config.resolution.y, app_state->config.dpi_scaling);
 }
-}
+} // namespace Charcoal

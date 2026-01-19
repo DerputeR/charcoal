@@ -47,6 +47,7 @@ install_manifest.txt
 compile_commands.json
 CTestTestfile.cmake
 _deps
+CMakeUserPresets.json
 
 ### CMake Patch ###
 # External projects
@@ -498,3 +499,13 @@ tags
 # Persistent undo
 [._]*.un~
 
+
+### vcpkg ###
+# Vcpkg
+
+vcpkg-manifest-install.log
+
+## Manifest Mode
+vcpkg_installed/
+
+# End of https://www.toptal.com/developers/gitignore/api/vcpkg

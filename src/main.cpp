@@ -30,14 +30,13 @@
 
 #include "app_info.h"
 
-static Charcoal::Gui::DebugGui debug_gui;
 static std::unique_ptr<Charcoal::Renderer> renderer;
 static SDL_Window *window;
 static SDL_GLContext gl_context;
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     SDL_SetAppMetadata(APP_FULL_NAME, APP_VERSION, APP_PACKAGE);
-    SDL_SetLogPriority(SDL_LOG_CATEGORY_VIDEO, SDL_LOG_PRIORITY_DEBUG);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_VIDEO, SDL_LOG_PRIORITY_WARN);
     SDL_SetLogPriority(SDL_LOG_CATEGORY_RENDER, SDL_LOG_PRIORITY_DEBUG);
     SDL_SetLogPriority(SDL_LOG_CATEGORY_CUSTOM, SDL_LOG_PRIORITY_DEBUG);
 
@@ -185,7 +184,9 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     // Styling
     ImGuiStyle &style = ImGui::GetStyle();
     style.ScaleAllSizes(app_state->config.dpi_scaling);
-    style.FontScaleDpi = app_state->config.dpi_scaling;
+    io.FontGlobalScale = app_state->config.dpi_scaling;
+    // available only in >= 1.92, experimental api
+    // style.FontScaleDpi = app_state->config.dpi_scaling;
 
     // Setup Platform/Renderer backends
     ImGui_ImplSDL3_InitForOpenGL(window, gl_context);
@@ -242,7 +243,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     renderer->render(app_state);
 
     // draw the GUI
-    debug_gui.draw(app_state);
+    app_state->debug_gui.draw(app_state);
 
     // display the render
     SDL_GL_SwapWindow(window);

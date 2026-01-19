@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "dependencies": [
+    "glm",
+    {
+      "name": "sdl3",
+      "version>=": "3.4.0"
+    }
+  ],
+  "builtin-baseline": "25b458671af03578e6a34edd8f0d1ac85e084df4"
+}
