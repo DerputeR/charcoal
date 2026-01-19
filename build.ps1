@@ -7,5 +7,6 @@ if (!$(Test-Path -Path "${SCRIPT_DIR}/build/default/CMakeCache.txt"))
 
 if ($(Test-Path -Path "${SCRIPT_DIR}/build/default/CMakeCache.txt"))
 {
-    cmake --build --preset=default
+    cmake --build --preset=default &&
+    cp "${SCRIPT_DIR}/build/mingw/compile_commands.json" "${SCRIPT_DIR}/build/compile_commands.json"
 }

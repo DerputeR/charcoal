@@ -7,5 +7,6 @@ if [[ ! -f "${SCRIPT_DIR}/build/mingw/CMakeCache.txt" ]]; then
 fi
 
 if [[ -f "${SCRIPT_DIR}/build/mingw/CMakeCache.txt" ]]; then
-    cmake --build --preset=mingw
+    cmake --build --preset=mingw &&
+        cp "${SCRIPT_DIR}/build/mingw/compile_commands.json" "${SCRIPT_DIR}/build/compile_commands.json"
 fi
