@@ -1,14 +1,16 @@
 #include "renderer.h"
+#include "../scenes/triangle_scene.h"
 #include "SDL3/SDL_log.h"
 #include "SDL3/SDL_pixels.h"
 #include "SDL3/SDL_surface.h"
 #include "app_state.h"
+#include "color.h"
 #include "shader_loader.h"
+#include "vertex.h"
 #include <cmath>
 #include <cstddef>
 #include <format>
-#include "vertex.h"
-#include "color.h"
+#include <glm/gtc/type_ptr.hpp>
 
 namespace Charcoal {
 Renderer::Renderer() :
@@ -33,8 +35,8 @@ Renderer::Renderer(GLuint shader_program) :
     glCullFace(GL_BACK);
 
     // TODO: WIP: textures
-    constexpr const char *paths[2] = {
-            "./resources/textures/crate.png", "./resources/textures/glass.png.disabled"};
+    constexpr const char *paths[2] = {"./resources/textures/crate.png",
+            "./resources/textures/glass.png.disabled"};
     glGenTextures(2, &texture[0]); // this can be an array of textures
     for (int i = 0; i < 2; i++) {
         glBindTexture(GL_TEXTURE_2D, texture[i]);
@@ -47,10 +49,10 @@ Renderer::Renderer(GLuint shader_program) :
         // load the texture data
         SDL_Surface *initial_load = nullptr;
         initial_load = SDL_LoadPNG(paths[i]);
-        //initial_load = IMG_Load(paths[i]);
+        // initial_load = IMG_Load(paths[i]);
         if (initial_load == nullptr) {
-            SDL_LogCritical(
-                    SDL_LOG_CATEGORY_SYSTEM, "Unable to load \"%s\": %s", paths[i], SDL_GetError());
+            SDL_LogCritical(SDL_LOG_CATEGORY_SYSTEM,
+                    "Unable to load \"%s\": %s", paths[i], SDL_GetError());
             initial_load = SDL_CreateSurface(
                     2, 2, SDL_PixelFormat::SDL_PIXELFORMAT_RGBA32);
             glm::uint32 *pixels =
@@ -172,11 +174,15 @@ void Renderer::render(AppState *app_state) {
             // program class to define this behavior
             float time_value =
                     app_state->time.ns_to_f32(app_state->time.get_total_time());
-            float offset = (std::sin(time_value) / 2.0);
-            int vertex_offset_location =
-                    glGetUniformLocation(shader_program, "offset");
-            if (vertex_offset_location > -1) {
-                glUniform1f(vertex_offset_location, offset);
+            int transform_location =
+                    glGetUniformLocation(shader_program, "transform");
+            if (transform_location > -1) {
+                if (TriangleScene *ts = dynamic_cast<TriangleScene *>(
+                            app_state->scene.get())) {
+                    glm::mat4 transform = ts->get_local_transform_matrix();
+                    glUniformMatrix4fv(transform_location, 1, GL_FALSE,
+                            glm::value_ptr(transform));
+                }
             }
             int blend_location = glGetUniformLocation(shader_program, "blend");
             if (blend_location > -1) {
