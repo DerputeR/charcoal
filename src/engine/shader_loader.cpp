@@ -1,12 +1,12 @@
 #include "shader_loader.h"
-#include "shader_sources.h"
 #include <SDL3/SDL_log.h>
+#include <SDL3/SDL_iostream.h>
 #include <glad/glad.h>
 #include <vector>
 
 namespace Charcoal::Shader {
-const GLchar *ShaderLoader::DEFAULT_VERT_SRC = Source::VERT_BASIC;
-const GLchar *ShaderLoader::DEFAULT_FRAG_SRC = Source::FRAG_BASIC;
+const GLchar *ShaderLoader::DEFAULT_VERT_SRC = static_cast<GLchar *>(SDL_LoadFile("resources/shaders/basic.vert.glsl", nullptr));
+const GLchar *ShaderLoader::DEFAULT_FRAG_SRC = static_cast<GLchar *>(SDL_LoadFile("resources/shaders/basic.frag.glsl", nullptr));
 
 const char *ShaderLoader::type_string(GLenum type) {
     switch (type) {

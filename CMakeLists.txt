@@ -97,23 +97,6 @@ set(ENGINE_SOURCES
     "src/engine/color.cpp"
 )
 
-# Shader sources; we need to track their changes
-set(SHADER_SOURCES
-    "src/engine/shader/basic.vert.glsl"
-    "src/engine/shader/basic.frag.glsl"
-)
-set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-    APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${SHADER_SOURCES}
-)
-# need to duplicate the source paths, no clean way to re-use afaik
-file(READ "src/engine/shader/basic.vert.glsl" SHADER_SRC_VERT_BASIC)
-file(READ "src/engine/shader/basic.frag.glsl" SHADER_SRC_FRAG_BASIC)
-configure_file(
-    "src/engine/shader_sources.h.in"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/engine/shader_sources.h"
-    @ONLY
-)
-
 # Scene sources. this is a WIP
 set(SCENE_SOURCES "src/scenes/triangle_scene.cpp")
 
