@@ -27,13 +27,6 @@ Renderer::Renderer(GLuint shader_program) :
     glGenVertexArrays(1, &vao);
     glGenBuffers(1, &ebo);
 
-    // face must be front and back. mode can be fill or wireframe
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-    // enable backface culling
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-
     // TODO: WIP: textures
     constexpr const char *paths[2] = {"./resources/textures/crate.png",
             "./resources/textures/glass.png"};
@@ -150,6 +143,7 @@ void Renderer::submit_mesh(const Mesh &mesh) {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+// FIXME: kill this method
 void Renderer::render(AppState *app_state) {
     if (error == Error::none) {
         glUseProgram(shader_program);

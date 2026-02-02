@@ -23,7 +23,7 @@ class Scene {
     glm::mat4 local_transform_matrix{1.0f};
     glm::vec3 translation{0.0f, 0.0f, 0.0f};
     glm::quat rotation{};
-    GLfloat scale = 1.0f;
+    float scale = 1.0f;
     bool t_dirty = false;
 
 public:

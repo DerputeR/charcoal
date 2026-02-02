@@ -21,15 +21,15 @@
 #include "engine/app_state.h"
 #include "engine/config.h"
 #include "engine/gui/debug_gui.h"
-#include "engine/renderer.h"
-#include "engine/shader_loader.h"
+//#include "engine/renderer.h"
+#include "engine/shader.h"
 #include "engine/time.h"
 #include "engine/window_utils.h"
 #include "engine/scene.h"
 
 #include "app_info.h"
 
-static std::unique_ptr<Charcoal::Renderer> renderer;
+//static std::unique_ptr<Charcoal::Renderer> renderer;
 static SDL_Window *window;
 static SDL_GLContext gl_context;
 
@@ -134,26 +134,34 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
         return SDL_APP_FAILURE;
     }
 
+    // Render pipeline configuration
+    // face must be front and back. mode can be fill or wireframe
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+    // enable backface culling
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+
     // Initialize default shader as a check
     // TODO: do this in the renderer. maybe the renderer should be a simple
     // object that we initialize in steps prior to use? seems like an
     // antipattern but idk
-    GLuint default_shader_program =
-            Charcoal::Shader::ShaderLoader::create_program(
-                    Charcoal::Shader::ShaderLoader::DEFAULT_VERT_SRC,
-                    Charcoal::Shader::ShaderLoader::DEFAULT_FRAG_SRC);
-    if (default_shader_program == 0) {
+    Charcoal::Shader::Program default_shader_program =
+            Charcoal::Shader::Loader::from_files(
+                    Charcoal::Shader::Loader::DEFAULT_VERT_PATH,
+                    Charcoal::Shader::Loader::DEFAULT_FRAG_PATH);
+    if (!default_shader_program.is_valid()) {
         SDL_LogCritical(SDL_LOG_CATEGORY_VIDEO,
                 "Failed to create default shader program");
         return SDL_APP_FAILURE;
     }
     // using a unique_ptr for now but might go back on this
-    renderer = std::make_unique<Charcoal::Renderer>(default_shader_program);
+    /*renderer = std::make_unique<Charcoal::Renderer>(default_shader_program);
     if (renderer->get_error() != Charcoal::Renderer::Error::none) {
         SDL_LogCritical(SDL_LOG_CATEGORY_RENDER, "%s",
                 renderer->get_error_msg().c_str());
         return SDL_APP_FAILURE;
-    }
+    }*/
 
     // Dear ImGUI init
     IMGUI_CHECKVERSION();
@@ -192,6 +200,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     ImGui_ImplOpenGL3_Init(
             "#version 330 core"); // glad was configured to use 3.3 core
 
+    // Upload mesh
+
     return SDL_APP_CONTINUE;
 }
 
@@ -216,8 +226,6 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     }
 
     // update the scene
-    // TODO:: separate scene and renderer components
-    // Ideally we'd like to have the scene loaded at runtime dynamically
     app_state->scene->update(app_state->time);
 
     // clear the buffer
@@ -226,18 +234,26 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
             app_state->config.clear_color.a);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    // compute per-frame values for uniforms later
+    float time_value =
+            app_state->time.ns_to_f32(app_state->time.get_total_time());
+    glm::mat4 transform = app_state->scene->get_local_transform_matrix();
+    float blend_amount = 0.5f + (std::sin(time_value * 2.0f) / 2.0);
+
+    // bind shader + uniforms
+
     // draw the scene
     // TODO: submit draw calls/update buffers if they changed before this step
-    if (app_state->time.get_frame_count() == 1) {
-        Charcoal::Scene *scene = app_state->scene.get();
-        renderer->submit_mesh(scene->get_meshes()[0]);
-        if (renderer->get_error() != Charcoal::Renderer::Error::none) {
-            SDL_LogCritical(SDL_LOG_CATEGORY_RENDER, "%s",
-                    renderer->get_error_msg().c_str());
-            return SDL_APP_FAILURE;
-        }
-    }
-    renderer->render(app_state);
+    //if (app_state->time.get_frame_count() == 1) {
+    //    Charcoal::Scene *scene = app_state->scene.get();
+    //    renderer->submit_mesh(scene->get_meshes()[0]);
+    //    if (renderer->get_error() != Charcoal::Renderer::Error::none) {
+    //        SDL_LogCritical(SDL_LOG_CATEGORY_RENDER, "%s",
+    //                renderer->get_error_msg().c_str());
+    //        return SDL_APP_FAILURE;
+    //    }
+    //}
+    //renderer->render(app_state);
 
     // draw the GUI
     app_state->debug_gui.draw(app_state);
