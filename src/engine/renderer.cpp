@@ -1,5 +1,5 @@
 #include "renderer.h"
-#include "../scenes/triangle_scene.h"
+#include "scene.h"
 #include "SDL3/SDL_log.h"
 #include "SDL3/SDL_pixels.h"
 #include "SDL3/SDL_surface.h"
@@ -36,7 +36,7 @@ Renderer::Renderer(GLuint shader_program) :
 
     // TODO: WIP: textures
     constexpr const char *paths[2] = {"./resources/textures/crate.png",
-            "./resources/textures/glass.png.disabled"};
+            "./resources/textures/glass.png"};
     glGenTextures(2, &texture[0]); // this can be an array of textures
     for (int i = 0; i < 2; i++) {
         glBindTexture(GL_TEXTURE_2D, texture[i]);
@@ -177,12 +177,10 @@ void Renderer::render(AppState *app_state) {
             int transform_location =
                     glGetUniformLocation(shader_program, "transform");
             if (transform_location > -1) {
-                if (TriangleScene *ts = dynamic_cast<TriangleScene *>(
-                            app_state->scene.get())) {
-                    glm::mat4 transform = ts->get_local_transform_matrix();
-                    glUniformMatrix4fv(transform_location, 1, GL_FALSE,
-                            glm::value_ptr(transform));
-                }
+                Scene *ts = app_state->scene.get();
+                glm::mat4 transform = ts->get_local_transform_matrix();
+                glUniformMatrix4fv(transform_location, 1, GL_FALSE,
+                        glm::value_ptr(transform));
             }
             int blend_location = glGetUniformLocation(shader_program, "blend");
             if (blend_location > -1) {

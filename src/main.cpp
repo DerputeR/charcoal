@@ -25,8 +25,7 @@
 #include "engine/shader_loader.h"
 #include "engine/time.h"
 #include "engine/window_utils.h"
-
-#include "scenes/triangle_scene.h"
+#include "engine/scene.h"
 
 #include "app_info.h"
 
@@ -48,7 +47,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
 
     // Appstate init
     Charcoal::AppState *app_state = new Charcoal::AppState();
-    app_state->scene = std::make_unique<Charcoal::TriangleScene>();
+    app_state->scene = std::make_unique<Charcoal::Scene>();
     *appstate = app_state;
 
     // Window init
@@ -230,9 +229,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     // draw the scene
     // TODO: submit draw calls/update buffers if they changed before this step
     if (app_state->time.get_frame_count() == 1) {
-        Charcoal::TriangleScene *scene =
-                reinterpret_cast<Charcoal::TriangleScene *>(
-                        app_state->scene.get());
+        Charcoal::Scene *scene = app_state->scene.get();
         renderer->submit_mesh(scene->get_meshes()[0]);
         if (renderer->get_error() != Charcoal::Renderer::Error::none) {
             SDL_LogCritical(SDL_LOG_CATEGORY_RENDER, "%s",

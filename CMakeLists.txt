@@ -88,17 +88,14 @@ configure_file(
 set(ENGINE_SOURCES
     "src/engine/shader_loader.cpp"
     "src/engine/time.cpp"
-    "src/engine/scene.cpp"
     "src/engine/renderer.cpp"
     "src/engine/gui/debug_gui.cpp"
     "src/engine/window_utils.cpp"
     "src/engine/vertex.cpp"
     "src/engine/mesh.cpp"
     "src/engine/color.cpp"
+    "src/engine/scene.cpp"
 )
-
-# Scene sources. this is a WIP
-set(SCENE_SOURCES "src/scenes/triangle_scene.cpp")
 
 
 ##########################################################
