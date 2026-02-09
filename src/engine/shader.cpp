@@ -40,10 +40,8 @@ GLuint Loader::compile(GLenum type, const GLchar *src) {
 
         // cleanup failed shader compile
         glDeleteShader(id);
-
         return 0;
     }
-
     return id;
 }
 
@@ -176,7 +174,8 @@ void Program::setFloat(const char *uniform_name, float value) {
     if (loc > -1) {
         glUniform1f(loc, value);
     } else {
-        // todo: error message handling
+        SDL_LogError(SDL_LOG_CATEGORY_INPUT, "Unable to locate uniform \"%s\"",
+                uniform_name);
     }
 }
 
@@ -187,7 +186,8 @@ void Program::setInt(const char *uniform_name, int value) {
     if (loc > -1) {
         glUniform1i(loc, value);
     } else {
-        // todo: error message handling
+        SDL_LogError(SDL_LOG_CATEGORY_INPUT, "Unable to locate uniform \"%s\"",
+                uniform_name);
     }
 }
 
@@ -198,7 +198,8 @@ void Program::setMat4(const char *uniform_name, const glm::mat4 &value) {
     if (loc > -1) {
         glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(value));
     } else {
-        // todo: error message handling
+        SDL_LogError(SDL_LOG_CATEGORY_INPUT, "Unable to locate uniform \"%s\"",
+                uniform_name);
     }
 }
 
