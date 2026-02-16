@@ -29,7 +29,6 @@
 
 #include "app_info.h"
 
-//static std::unique_ptr<Charcoal::Renderer> renderer;
 static SDL_Window *window;
 static SDL_GLContext gl_context;
 
@@ -45,12 +44,13 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
         return SDL_APP_FAILURE;
     }
 
-    // Appstate init
+    // Init appstate
+    // we must ensure any OpenGL related state is initialized
+    // *after* the render context is initialized
     Charcoal::AppState *app_state = new Charcoal::AppState();
-    app_state->scene = std::make_unique<Charcoal::Scene>();
     *appstate = app_state;
 
-    // Window init
+    // Init window
     app_state->config.dpi_scaling = 1.0f;
     SDL_DisplayID primary_display = SDL_GetPrimaryDisplay();
     if (primary_display == 0) {
@@ -90,7 +90,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
                 "Failed to set window position: %s", SDL_GetError());
     }
 
-    // OpenGL render context
+    // Init OpenGL render context
     gl_context = SDL_GL_CreateContext(window);
     if (gl_context == nullptr) {
         SDL_LogCritical(SDL_LOG_CATEGORY_VIDEO,
@@ -105,6 +105,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
         return SDL_APP_FAILURE;
     }
 
+    // Configure vsync
     if (app_state->config.vsync_enabled) {
         if (app_state->config.vsync_adaptive) {
             if (!SDL_GL_SetSwapInterval(-1)) {
@@ -128,42 +129,49 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
         app_state->time.set_fps_cap(app_state->config.fps_max);
     }
 
-    // GLAD init
+    // Init GLAD
     if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
         SDL_LogCritical(SDL_LOG_CATEGORY_VIDEO, "Failed to initialize GLAD");
         return SDL_APP_FAILURE;
     }
 
-    // Render pipeline configuration
+    // Configure render pipeline
     // face must be front and back. mode can be fill or wireframe
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-    // enable backface culling
+    // Enable backface culling
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
-    // Initialize default shader as a check
-    // TODO: do this in the renderer. maybe the renderer should be a simple
-    // object that we initialize in steps prior to use? seems like an
-    // antipattern but idk
-    Charcoal::Shader::Program default_shader_program =
+    // Init CPU to GPU bridge
+    app_state->gpu_mesh = std::make_unique<Charcoal::GpuMesh>();
+
+    // Init default shader
+    app_state->shader = std::make_unique<Charcoal::Shader::Program>(
             Charcoal::Shader::Loader::from_files(
                     Charcoal::Shader::Loader::DEFAULT_VERT_PATH,
-                    Charcoal::Shader::Loader::DEFAULT_FRAG_PATH);
-    if (!default_shader_program.is_valid()) {
+                    Charcoal::Shader::Loader::DEFAULT_FRAG_PATH));
+    if (!app_state->shader->is_valid()) {
         SDL_LogCritical(SDL_LOG_CATEGORY_VIDEO,
                 "Failed to create default shader program");
         return SDL_APP_FAILURE;
     }
-    // using a unique_ptr for now but might go back on this
-    /*renderer = std::make_unique<Charcoal::Renderer>(default_shader_program);
-    if (renderer->get_error() != Charcoal::Renderer::Error::none) {
-        SDL_LogCritical(SDL_LOG_CATEGORY_RENDER, "%s",
-                renderer->get_error_msg().c_str());
-        return SDL_APP_FAILURE;
-    }*/
 
-    // Dear ImGUI init
+    // Init scene
+    app_state->scene = std::make_unique<Charcoal::Scene>();
+
+    // Init textures
+    // TODO:
+
+    // Upload mesh
+    assert(app_state->scene->get_meshes().size() > 0);
+    // todo: support merging meshes into a single big buffer
+    app_state->gpu_mesh->upload(app_state->scene->get_meshes()[0]);
+    if (!app_state->gpu_mesh->is_valid()) {
+        return SDL_APP_FAILURE;    
+    }
+
+    // Init Dear ImGUI
     IMGUI_CHECKVERSION();
     if (ImGui::CreateContext() == nullptr) {
         SDL_LogCritical(
@@ -199,8 +207,6 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     ImGui_ImplSDL3_InitForOpenGL(window, gl_context);
     ImGui_ImplOpenGL3_Init(
             "#version 330 core"); // glad was configured to use 3.3 core
-
-    // Upload mesh
 
     return SDL_APP_CONTINUE;
 }
@@ -240,20 +246,17 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     glm::mat4 transform = app_state->scene->get_local_transform_matrix();
     float blend_amount = 0.5f + (std::sin(time_value * 2.0f) / 2.0);
 
-    // bind shader + uniforms
+    // bind shader + set uniforms
+    app_state->shader->use();
+    app_state->shader->set_mat4("transform", transform);
+    app_state->shader->set_float("blend", blend_amount);
 
-    // draw the scene
-    // TODO: submit draw calls/update buffers if they changed before this step
-    //if (app_state->time.get_frame_count() == 1) {
-    //    Charcoal::Scene *scene = app_state->scene.get();
-    //    renderer->submit_mesh(scene->get_meshes()[0]);
-    //    if (renderer->get_error() != Charcoal::Renderer::Error::none) {
-    //        SDL_LogCritical(SDL_LOG_CATEGORY_RENDER, "%s",
-    //                renderer->get_error_msg().c_str());
-    //        return SDL_APP_FAILURE;
-    //    }
-    //}
-    //renderer->render(app_state);
+    // bind textures
+    // TODO: need to do this part or glDrawElements just crashes immediately
+
+    app_state->gpu_mesh->bind();
+    glDrawElements(GL_TRIANGLES, app_state->gpu_mesh->get_element_count(),
+            GL_UNSIGNED_INT, 0);
 
     // draw the GUI
     app_state->debug_gui.draw(app_state);

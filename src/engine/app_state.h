@@ -4,6 +4,8 @@
 #include "gui/debug_gui.h"
 #include "scene.h"
 #include "time.h"
+#include "mesh.h"
+#include "shader.h"
 #include <memory>
 
 namespace Charcoal {
@@ -12,5 +14,7 @@ struct AppState {
     Config config;
     Gui::DebugGui debug_gui;
     std::unique_ptr<Scene> scene;
+    std::unique_ptr<GpuMesh> gpu_mesh;
+    std::unique_ptr<Shader::Program> shader;
 };
 } // namespace Charcoal

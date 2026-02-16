@@ -167,7 +167,7 @@ void Program::use() {
     glUseProgram(id);
 }
 
-void Program::setFloat(const char *uniform_name, float value) {
+void Program::set_float(const char *uniform_name, float value) {
     static_assert(sizeof(char) == sizeof(GLchar));
     static_assert(sizeof(float) == sizeof(GLfloat));
     GLint loc = glGetUniformLocation(id, uniform_name);
@@ -179,7 +179,7 @@ void Program::setFloat(const char *uniform_name, float value) {
     }
 }
 
-void Program::setInt(const char *uniform_name, int value) {
+void Program::set_int(const char *uniform_name, int value) {
     static_assert(sizeof(char) == sizeof(GLchar));
     static_assert(sizeof(int) == sizeof(GLint));
     GLint loc = glGetUniformLocation(id, uniform_name);
@@ -191,7 +191,7 @@ void Program::setInt(const char *uniform_name, int value) {
     }
 }
 
-void Program::setMat4(const char *uniform_name, const glm::mat4 &value) {
+void Program::set_mat4(const char *uniform_name, const glm::mat4 &value) {
     static_assert(sizeof(char) == sizeof(GLchar));
     static_assert(sizeof(int) == sizeof(GLint));
     GLint loc = glGetUniformLocation(id, uniform_name);

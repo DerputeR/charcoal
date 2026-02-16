@@ -19,9 +19,9 @@ public:
     Program &operator=(const Program &other) = delete;
 
     void use();
-    void setFloat(const char* uniform_name, float value);
-    void setInt(const char *uniform_name, int value);
-    void setMat4(const char *uniform_name, const glm::mat4 &value);
+    void set_float(const char* uniform_name, float value);
+    void set_int(const char *uniform_name, int value);
+    void set_mat4(const char *uniform_name, const glm::mat4 &value);
     bool is_valid() const;
 };
 
