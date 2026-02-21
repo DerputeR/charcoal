@@ -23,6 +23,8 @@
 #include "engine/gui/debug_gui.h"
 //#include "engine/renderer.h"
 #include "engine/shader.h"
+#include "engine/texture.h"
+#include "engine/mesh.h"
 #include "engine/time.h"
 #include "engine/window_utils.h"
 #include "engine/scene.h"
@@ -161,7 +163,15 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     app_state->scene = std::make_unique<Charcoal::Scene>();
 
     // Init textures
-    // TODO:
+    Charcoal::Texture crate_texture = Charcoal::TextureLoader::load_from_png("./resources/textures/crate.png");
+    Charcoal::Texture glass_texture = Charcoal::TextureLoader::load_from_png(
+            "./resources/textures/glass.png");
+    app_state->gpu_texture.emplace_back(Charcoal::GpuTexture());
+    app_state->gpu_texture.emplace_back(Charcoal::GpuTexture());
+    app_state->gpu_texture[0].upload(crate_texture);
+    app_state->gpu_texture[1].upload(glass_texture);
+    app_state->shader->set_int("obj_texture", 0);
+    app_state->shader->set_int("glass_texture", 1);
 
     // Upload mesh
     assert(app_state->scene->get_meshes().size() > 0);
@@ -252,9 +262,13 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     app_state->shader->set_float("blend", blend_amount);
 
     // bind textures
-    // TODO: need to do this part or glDrawElements just crashes immediately
+    glActiveTexture(GL_TEXTURE0);
+    app_state->gpu_texture[0].bind();
+    glActiveTexture(GL_TEXTURE1);
+    app_state->gpu_texture[1].bind();
 
     app_state->gpu_mesh->bind();
+    // ! segfaults somehow
     glDrawElements(GL_TRIANGLES, app_state->gpu_mesh->get_element_count(),
             GL_UNSIGNED_INT, 0);
 

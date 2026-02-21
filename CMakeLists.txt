@@ -88,7 +88,7 @@ configure_file(
 set(ENGINE_SOURCES
     "src/engine/shader.cpp"
     "src/engine/time.cpp"
-    # "src/engine/renderer.cpp"
+    "src/engine/texture.cpp"
     "src/engine/gui/debug_gui.cpp"
     "src/engine/window_utils.cpp"
     "src/engine/vertex.cpp"
