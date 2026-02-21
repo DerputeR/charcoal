@@ -145,42 +145,6 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
-    // Init CPU to GPU bridge
-    app_state->gpu_mesh = std::make_unique<Charcoal::GpuMesh>();
-
-    // Init default shader
-    app_state->shader = std::make_unique<Charcoal::Shader::Program>(
-            Charcoal::Shader::Loader::from_files(
-                    Charcoal::Shader::Loader::DEFAULT_VERT_PATH,
-                    Charcoal::Shader::Loader::DEFAULT_FRAG_PATH));
-    if (!app_state->shader->is_valid()) {
-        SDL_LogCritical(SDL_LOG_CATEGORY_VIDEO,
-                "Failed to create default shader program");
-        return SDL_APP_FAILURE;
-    }
-
-    // Init scene
-    app_state->scene = std::make_unique<Charcoal::Scene>();
-
-    // Init textures
-    Charcoal::Texture crate_texture = Charcoal::TextureLoader::load_from_png("./resources/textures/crate.png");
-    Charcoal::Texture glass_texture = Charcoal::TextureLoader::load_from_png(
-            "./resources/textures/glass.png");
-    app_state->gpu_texture.emplace_back(Charcoal::GpuTexture());
-    app_state->gpu_texture.emplace_back(Charcoal::GpuTexture());
-    app_state->gpu_texture[0].upload(crate_texture);
-    app_state->gpu_texture[1].upload(glass_texture);
-    app_state->shader->set_int("obj_texture", 0);
-    app_state->shader->set_int("glass_texture", 1);
-
-    // Upload mesh
-    assert(app_state->scene->get_meshes().size() > 0);
-    // todo: support merging meshes into a single big buffer
-    app_state->gpu_mesh->upload(app_state->scene->get_meshes()[0]);
-    if (!app_state->gpu_mesh->is_valid()) {
-        return SDL_APP_FAILURE;    
-    }
-
     // Init Dear ImGUI
     IMGUI_CHECKVERSION();
     if (ImGui::CreateContext() == nullptr) {
@@ -217,6 +181,44 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     ImGui_ImplSDL3_InitForOpenGL(window, gl_context);
     ImGui_ImplOpenGL3_Init(
             "#version 330 core"); // glad was configured to use 3.3 core
+
+    // Init default shader
+    app_state->shader = std::make_unique<Charcoal::Shader::Program>(
+            Charcoal::Shader::Loader::from_files(
+                    Charcoal::Shader::Loader::DEFAULT_VERT_PATH,
+                    Charcoal::Shader::Loader::DEFAULT_FRAG_PATH));
+    if (!app_state->shader->is_valid()) {
+        SDL_LogCritical(SDL_LOG_CATEGORY_VIDEO,
+                "Failed to create default shader program");
+        return SDL_APP_FAILURE;
+    }
+
+    // Init scene
+    app_state->scene = std::make_unique<Charcoal::Scene>();
+
+    // Init CPU to GPU bridge
+    app_state->gpu_mesh = std::make_unique<Charcoal::GpuMesh>();
+
+    // Upload mesh
+    assert(app_state->scene->get_meshes().size() > 0);
+    // todo: support merging meshes into a single big buffer
+    app_state->gpu_mesh->upload(app_state->scene->get_meshes()[0]);
+    if (!app_state->gpu_mesh->is_valid()) {
+        return SDL_APP_FAILURE;    
+    }
+
+    // Init textures
+    Charcoal::Texture crate_texture = Charcoal::TextureLoader::load_from_png(
+            "./resources/textures/crate.png");
+    Charcoal::Texture glass_texture = Charcoal::TextureLoader::load_from_png(
+            "./resources/textures/glass.png");
+    app_state->gpu_texture.emplace_back(Charcoal::GpuTexture());
+    app_state->gpu_texture.emplace_back(Charcoal::GpuTexture());
+    app_state->gpu_texture[0].upload(crate_texture);
+    app_state->gpu_texture[1].upload(glass_texture);
+    app_state->shader->use();
+    app_state->shader->set_int("obj_texture", 0);
+    app_state->shader->set_int("glass_texture", 1);
 
     return SDL_APP_CONTINUE;
 }
@@ -267,8 +269,8 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     glActiveTexture(GL_TEXTURE1);
     app_state->gpu_texture[1].bind();
 
-    app_state->gpu_mesh->bind();
-    // ! segfaults somehow
+    // bind VAO and draw
+    app_state->gpu_mesh->bind_vao();
     glDrawElements(GL_TRIANGLES, app_state->gpu_mesh->get_element_count(),
             GL_UNSIGNED_INT, 0);
 

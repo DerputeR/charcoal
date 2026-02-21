@@ -18,7 +18,7 @@ Texture TextureLoader::load_from_png(const char *filepath) {
             return Texture(initial_load);
         }
     } else {
-        SDL_LogCritical(SDL_LOG_CATEGORY_SYSTEM, "Unable to load \"%s\": %s",
+        SDL_LogCritical(SDL_LOG_CATEGORY_CUSTOM, "Unable to load \"%s\": %s",
                 filepath, SDL_GetError());
         return Texture();
     }
@@ -85,7 +85,7 @@ int Texture::get_height() const {
 
 GpuTexture::GpuTexture() : id{0} {
     glGenTextures(1, &id);
-    // todo: set default parameters
+    // set default parameters (wrapping, filter)
     glBindTexture(GL_TEXTURE_2D, id);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
@@ -113,6 +113,7 @@ GpuTexture::~GpuTexture() noexcept {
 }
 
 void GpuTexture::upload(const Texture &texture) {
+    bind();
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
             texture.get_width(), texture.get_height(),
             0, GL_RGBA, GL_UNSIGNED_BYTE,

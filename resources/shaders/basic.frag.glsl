@@ -14,4 +14,5 @@ void main() {
     vec4 overlay = texture(glass_texture, vertex_uv);
     // vec4 overlay = vec4((int(2 * vertex_uv.x) + int(2 * vertex_uv.y)) % 2, 0.0, (int(2 * vertex_uv.x) + int(2 * vertex_uv.y)) % 2, 1.0);
     FragColor = mix(base, overlay, overlay.a * blend);
+    // FragColor = vec4(blend, 0.0, 0.0, 1.0);
 }

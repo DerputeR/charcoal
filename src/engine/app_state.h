@@ -8,6 +8,7 @@
 #include "shader.h"
 #include "texture.h"
 #include <memory>
+#include <vector>
 
 namespace Charcoal {
 struct AppState {

@@ -70,7 +70,7 @@ public:
     /**
      * @brief Binds the GpuMesh's VAO to the current OpenGL context
      */
-    void bind();
+    void bind_vao();
 
     /**
      * @brief Checks if the GpuMesh is in a valid state.

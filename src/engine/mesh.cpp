@@ -8,9 +8,8 @@ GpuMesh::GpuMesh() :
         vbo{0}, vao{0}, ebo{0},
         element_count{0}, error{Error::none} {
     glGenBuffers(1, &vbo);
-    glGenBuffers(1, &vao);
+    glGenVertexArrays(1, &vao);
     glGenBuffers(1, &ebo);
-    init_attribute_layout();
 }
 
 void GpuMesh::init_attribute_layout() {
@@ -19,10 +18,15 @@ void GpuMesh::init_attribute_layout() {
     glVertexAttribPointer(ATTRIB_POSITION, 3, GL_FLOAT, GL_FALSE,
             sizeof(Vertex),
             reinterpret_cast<GLvoid *>(offsetof(Vertex, position)));
+    glEnableVertexAttribArray(ATTRIB_POSITION);
+
     glVertexAttribIPointer(ATTRIB_COLOR, 1, GL_UNSIGNED_INT, sizeof(Vertex),
             reinterpret_cast<GLvoid *>(offsetof(Vertex, color)));
+    glEnableVertexAttribArray(ATTRIB_COLOR);
+
     glVertexAttribPointer(ATTRIB_UV, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
             reinterpret_cast<GLvoid *>(offsetof(Vertex, uv)));
+    glEnableVertexAttribArray(ATTRIB_UV);
 }
 
 GpuMesh::GpuMesh(GpuMesh &&other) noexcept :
@@ -62,7 +66,7 @@ GpuMesh::~GpuMesh() noexcept {
 }
 
 void GpuMesh::upload(const Mesh &mesh) {
-    glBindVertexArray(vao);
+    bind_vao();
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, mesh.verts.size() * sizeof(Vertex),
             mesh.verts.data(), GL_STATIC_DRAW);
@@ -97,15 +101,20 @@ void GpuMesh::upload(const Mesh &mesh) {
     } else {
         element_count = mesh.indices.size();
     }
+    init_attribute_layout();
+    GLenum err = glGetError();
+    if (err != GL_NO_ERROR) {
+        error = Error::unknown;
+        SDL_LogError(SDL_LOG_CATEGORY_GPU,
+                "OpenGL error while uploading to GpuMesh: %u", error);
+        return;
+    }
     error = Error::none;
 }
 
-void GpuMesh::bind() {
+void GpuMesh::bind_vao() {
     assert(is_valid());
     glBindVertexArray(vao);
-    glEnableVertexAttribArray(ATTRIB_POSITION);
-    glEnableVertexAttribArray(ATTRIB_COLOR);
-    glEnableVertexAttribArray(ATTRIB_UV);
 }
 
 GpuMesh::Error GpuMesh::get_error() const {
