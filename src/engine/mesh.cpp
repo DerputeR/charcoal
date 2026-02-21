@@ -106,7 +106,7 @@ void GpuMesh::upload(const Mesh &mesh) {
     if (err != GL_NO_ERROR) {
         error = Error::unknown;
         SDL_LogError(SDL_LOG_CATEGORY_GPU,
-                "OpenGL error while uploading to GpuMesh: %u", error);
+                "OpenGL error while uploading to GpuMesh: %u", err);
         return;
     }
     error = Error::none;
