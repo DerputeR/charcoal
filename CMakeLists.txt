@@ -13,7 +13,6 @@ set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<$<CONFIG:Debug,RelWithDebInfo>:EditAn
 project(Charcoal VERSION 0.1.0
     DESCRIPTION "A terrible, inefficient, but custom-made game engine"
     LANGUAGES C CXX)
-set(EXECUTABLE_NAME ${PROJECT_NAME})
 
 # Export compile commands for things like clangd
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
@@ -104,25 +103,25 @@ set(ENGINE_SOURCES
 
 # Create the executable target.
 if(ANDROID)
-    # The SDL Java code is hardcoded to load libmain.so on
-    # Android, so we need to change EXECUTABLE_NAME
-    set(EXECUTABLE_NAME main)
-    add_library(${EXECUTABLE_NAME} SHARED)
+    # The SDL Java code is hardcoded to load libmain.so
+    message(WARNING "Android builds are not officially supported for Charcoal. Here be dragons!")
+    add_library(main SHARED)
 else()
-    add_executable(${EXECUTABLE_NAME})
+    add_executable(Charcoal)
 endif()
 
 # Configure C++ version and extensions
-target_compile_features(${EXECUTABLE_NAME} PUBLIC cxx_std_23)
-set_target_properties(${EXECUTABLE_NAME} PROPERTIES CXX_EXTENSIONS OFF)
+target_compile_features(Charcoal PUBLIC cxx_std_23)
+set_target_properties(Charcoal PROPERTIES CXX_EXTENSIONS OFF)
 
 # Web targets need CMake to generate a HTML webpage
 if(EMSCRIPTEN)
+    message(WARNING "Web builds are not officially supported for Charcoal. Here be dragons!")
     set(CMAKE_EXECUTABLE_SUFFIX ".html" CACHE INTERNAL "")
 endif()
 
 # Add sources to the target
-target_sources(${EXECUTABLE_NAME} PRIVATE
+target_sources(Charcoal PRIVATE
     "src/main.cpp"
     "glad/src/glad.c"
     ${IMGUI_SOURCES}
@@ -133,21 +132,21 @@ target_sources(${EXECUTABLE_NAME} PRIVATE
 )
 
 # For debugging
-target_sources(${EXECUTABLE_NAME} PRIVATE $<$<CONFIG:Debug>:${IMGUI_DEBUG}>)
-target_compile_definitions(${EXECUTABLE_NAME} PRIVATE $<$<CONFIG:Debug>:DEBUG>)
+target_sources(Charcoal PRIVATE $<$<CONFIG:Debug>:${IMGUI_DEBUG}>)
+target_compile_definitions(Charcoal PRIVATE $<$<CONFIG:Debug>:DEBUG>)
 # if (MSVC AND WIN32 AND NOT MSVC_VERSION VERSION_LESS 142)
-# target_link_options(${EXECUTABLE_NAME} PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)
-# target_compile_options(${EXECUTABLE_NAME} PRIVATE $<$<CONFIG:Debug>:/ZI>)
+# target_link_options(Charcoal PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)
+# target_compile_options(Charcoal PRIVATE $<$<CONFIG:Debug>:/ZI>)
 # endif()
 
 # link libraries
-# target_link_libraries(${EXECUTABLE_NAME} PUBLIC SDL3_image::SDL3_image)
-target_link_libraries(${EXECUTABLE_NAME} PUBLIC SDL3::SDL3)
-target_link_libraries(${EXECUTABLE_NAME} PUBLIC glm::glm-header-only)
-target_include_directories(${EXECUTABLE_NAME} PRIVATE "glad/include")
-target_include_directories(${EXECUTABLE_NAME} PRIVATE "${imgui_SOURCE_DIR}")
-target_include_directories(${EXECUTABLE_NAME} PRIVATE "${imgui_SOURCE_DIR}/backends")
-target_include_directories(${EXECUTABLE_NAME} PRIVATE "${imgui_SOURCE_DIR}/misc/cpp")
+# target_link_libraries(Charcoal PUBLIC SDL3_image::SDL3_image)
+target_link_libraries(Charcoal PUBLIC SDL3::SDL3)
+target_link_libraries(Charcoal PUBLIC glm::glm-header-only)
+target_include_directories(Charcoal PRIVATE "glad/include")
+target_include_directories(Charcoal PRIVATE "${imgui_SOURCE_DIR}")
+target_include_directories(Charcoal PRIVATE "${imgui_SOURCE_DIR}/backends")
+target_include_directories(Charcoal PRIVATE "${imgui_SOURCE_DIR}/misc/cpp")
 
 # Installation rules
 # TODO
@@ -164,14 +163,16 @@ target_include_directories(${EXECUTABLE_NAME} PRIVATE "${imgui_SOURCE_DIR}/misc/
 ##########################################################
 
 # Copy resources
-add_custom_command(TARGET ${EXECUTABLE_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory
-        "$<TARGET_FILE_DIR:${EXECUTABLE_NAME}>/resources"
+add_custom_target(copy_changed_resources
+    ALL
     COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
         "${CMAKE_SOURCE_DIR}/resources"
-            "$<TARGET_FILE_DIR:${EXECUTABLE_NAME}>/resources"
+        "$<TARGET_FILE_DIR:Charcoal>/resources"
+    COMMENT "Copying changed resources to build directory..."
     VERBATIM
 )
+
+add_dependencies(Charcoal copy_changed_resources)
 
 ##########################################################
 #                  POST-BUILD COMMANDS                   #
@@ -179,14 +180,14 @@ add_custom_command(TARGET ${EXECUTABLE_NAME} POST_BUILD
 
 if (MINGW)
     if (VCPKG_TARGET_TRIPLET)
-        add_custom_command(TARGET ${EXECUTABLE_NAME} POST_BUILD
+        add_custom_command(TARGET Charcoal POST_BUILD
         COMMAND
             ${CMAKE_COMMAND} -E copy_directory
-            "$<TARGET_FILE_DIR:${EXECUTABLE_NAME}>/vcpkg_installed/${VCPKG_TARGET_TRIPLET}$<$<CONFIG:Debug>:/debug>/bin"
-            "$<TARGET_FILE_DIR:${EXECUTABLE_NAME}>"
+            "$<TARGET_FILE_DIR:Charcoal>/vcpkg_installed/${VCPKG_TARGET_TRIPLET}$<$<CONFIG:Debug>:/debug>/bin"
+            "$<TARGET_FILE_DIR:Charcoal>"
         VERBATIM)
     else()
-        message(WARNING "You will need to manually copy all dependency .dll files to the directory adjacent to ${EXECUTABLE_NAME}")
+        message(WARNING "You will need to manually copy all dependency .dll files to the directory adjacent to Charcoal")
     endif()
 endif()
 
