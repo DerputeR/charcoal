@@ -183,10 +183,10 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
             "#version 330 core"); // glad was configured to use 3.3 core
 
     // Init default shader
-    app_state->shader = std::make_unique<Charcoal::Shader::Program>(
-            Charcoal::Shader::Loader::from_files(
-                    Charcoal::Shader::Loader::DEFAULT_VERT_PATH,
-                    Charcoal::Shader::Loader::DEFAULT_FRAG_PATH));
+    app_state->shader = std::make_unique<Charcoal::Shader>(
+            Charcoal::ShaderLoader::from_files(
+                    Charcoal::ShaderLoader::DEFAULT_VERT_PATH,
+                    Charcoal::ShaderLoader::DEFAULT_FRAG_PATH));
     if (!app_state->shader->is_valid()) {
         SDL_LogCritical(SDL_LOG_CATEGORY_VIDEO,
                 "Failed to create default shader program");

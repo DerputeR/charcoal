@@ -2,21 +2,21 @@
 #include <glad/glad.h>
 #include <glm/mat4x4.hpp>
 
-namespace Charcoal::Shader {
-class Program {
+namespace Charcoal {
+class Shader {
     GLuint id;
 public:
-    Program() = delete;
-    explicit Program(GLuint id);
-    ~Program() noexcept;
+    Shader() = delete;
+    explicit Shader(GLuint id);
+    ~Shader() noexcept;
 
     // move constructors
-    Program(Program &&other) noexcept;
-    Program &operator=(Program &&other) noexcept;
+    Shader(Shader &&other) noexcept;
+    Shader &operator=(Shader &&other) noexcept;
 
     // don't allow copying
-    Program(const Program &other) = delete;
-    Program &operator=(const Program &other) = delete;
+    Shader(const Shader &other) = delete;
+    Shader &operator=(const Shader &other) = delete;
 
     void use();
     void set_float(const char* uniform_name, float value);
@@ -25,14 +25,14 @@ public:
     bool is_valid() const;
 };
 
-class Loader {
+class ShaderLoader {
     static const char *type_string(GLenum type);
     static GLuint compile(GLenum type, const GLchar *source);
 
 public:
-    static Program from_strings(
+    static Shader from_strings(
             const char *vert_shader_src, const char *frag_shader_src);
-    static Program from_files(
+    static Shader from_files(
             const char *vert_shader_path, const char *frag_shader_path);
 
     static const char *DEFAULT_VERT_PATH;

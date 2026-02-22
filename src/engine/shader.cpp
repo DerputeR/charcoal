@@ -4,12 +4,12 @@
 #include <cassert>
 #include <glm/gtc/type_ptr.hpp>
 
-namespace Charcoal::Shader {
+namespace Charcoal {
 
-const char *Loader::DEFAULT_VERT_PATH = "resources/shaders/basic.vert.glsl";
-const char *Loader::DEFAULT_FRAG_PATH = "resources/shaders/basic.frag.glsl";
+const char *ShaderLoader::DEFAULT_VERT_PATH = "resources/shaders/basic.vert.glsl";
+const char *ShaderLoader::DEFAULT_FRAG_PATH = "resources/shaders/basic.frag.glsl";
 
-const char *Loader::type_string(GLenum type) {
+const char *ShaderLoader::type_string(GLenum type) {
     switch (type) {
         case GL_VERTEX_SHADER:
             return "vertex shader";
@@ -20,7 +20,7 @@ const char *Loader::type_string(GLenum type) {
     }
 }
 
-GLuint Loader::compile(GLenum type, const GLchar *src) {
+GLuint ShaderLoader::compile(GLenum type, const GLchar *src) {
     GLuint id = glCreateShader(type);
     glShaderSource(id, 1, &src,
             NULL); // returns a non-zero reference ID for the shader
@@ -45,54 +45,54 @@ GLuint Loader::compile(GLenum type, const GLchar *src) {
     return id;
 }
 
-Program Loader::from_files(
+Shader ShaderLoader::from_files(
         const char *vert_shader_path, const char *frag_shader_path) {
     char *vert_shader =
             static_cast<char *>(SDL_LoadFile(vert_shader_path, nullptr));
     char *frag_shader =
             static_cast<char *>(SDL_LoadFile(frag_shader_path, nullptr));
-    Program program = from_strings(vert_shader, frag_shader);
+    Shader program = from_strings(vert_shader, frag_shader);
     SDL_free(vert_shader);
     SDL_free(frag_shader);
     return program;
 }
 
-Program Loader::from_strings(
+Shader ShaderLoader::from_strings(
         const char *vert_shader_src, const char *frag_shader_src) {
     static_assert(sizeof(char) == sizeof(GLchar));
 
     if (vert_shader_src == nullptr) {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Cannot compile shader program "
                                              "with null vertex shader source.");
-        return Program{0};
+        return Shader{0};
     }
 
     if (frag_shader_src == nullptr) {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR,
                 "Cannot compile shader program with "
                 "null fragment shader source.");
-        return Program{0};
+        return Shader{0};
     }
 
     GLuint vs = compile(GL_VERTEX_SHADER, vert_shader_src);
     if (vs == 0) {
         SDL_LogError(
                 SDL_LOG_CATEGORY_ERROR, "Aborting shader program creation.");
-        return Program{0};
+        return Shader{0};
     }
 
     GLuint fs = compile(GL_FRAGMENT_SHADER, frag_shader_src);
     if (fs == 0) {
         SDL_LogError(
                 SDL_LOG_CATEGORY_ERROR, "Aborting shader program creation.");
-        return Program{0};
+        return Shader{0};
     }
 
     GLuint program_id = glCreateProgram(); // non-zero id
     if (program_id == 0) {
         SDL_LogError(
                 SDL_LOG_CATEGORY_ERROR, "Failed to create program object.");
-        return Program{program_id};
+        return Shader{program_id};
     }
     glAttachShader(program_id, vs);
     glAttachShader(program_id, fs);
@@ -119,7 +119,7 @@ Program Loader::from_strings(
         SDL_LogError(SDL_LOG_CATEGORY_ERROR,
                 "Shader program linking failed: %s", &msg[0]);
 
-        return Program{0};
+        return Shader{0};
     }
 
     glValidateProgram(program_id);
@@ -135,26 +135,26 @@ Program Loader::from_strings(
         SDL_LogError(SDL_LOG_CATEGORY_ERROR,
                 "Shader program validation failed: %s", &msg[0]);
 
-        return Program{0};
+        return Shader{0};
     }
 
-    return Program{program_id};
+    return Shader{program_id};
 }
 
-Program::Program(GLuint id) : id{id} {
+Shader::Shader(GLuint id) : id{id} {
 }
 
-Program::~Program() {
+Shader::~Shader() {
     if (id != 0) {
         glDeleteProgram(id);
     }
 }
 
-Program::Program(Program &&other) noexcept : id{other.id} {
+Shader::Shader(Shader &&other) noexcept : id{other.id} {
     other.id = 0;
 }
 
-Program &Program::operator=(Program &&other) noexcept {
+Shader &Shader::operator=(Shader &&other) noexcept {
     if (this != &other) {
         this->id = other.id;
         other.id = 0;
@@ -162,12 +162,12 @@ Program &Program::operator=(Program &&other) noexcept {
     return *this;
 }
 
-void Program::use() {
+void Shader::use() {
     assert(is_valid());
     glUseProgram(id);
 }
 
-void Program::set_float(const char *uniform_name, float value) {
+void Shader::set_float(const char *uniform_name, float value) {
     static_assert(sizeof(char) == sizeof(GLchar));
     static_assert(sizeof(float) == sizeof(GLfloat));
     GLint loc = glGetUniformLocation(id, uniform_name);
@@ -179,7 +179,7 @@ void Program::set_float(const char *uniform_name, float value) {
     }
 }
 
-void Program::set_int(const char *uniform_name, int value) {
+void Shader::set_int(const char *uniform_name, int value) {
     static_assert(sizeof(char) == sizeof(GLchar));
     static_assert(sizeof(int) == sizeof(GLint));
     GLint loc = glGetUniformLocation(id, uniform_name);
@@ -191,7 +191,7 @@ void Program::set_int(const char *uniform_name, int value) {
     }
 }
 
-void Program::set_mat4(const char *uniform_name, const glm::mat4 &value) {
+void Shader::set_mat4(const char *uniform_name, const glm::mat4 &value) {
     static_assert(sizeof(char) == sizeof(GLchar));
     static_assert(sizeof(int) == sizeof(GLint));
     GLint loc = glGetUniformLocation(id, uniform_name);
@@ -203,7 +203,7 @@ void Program::set_mat4(const char *uniform_name, const glm::mat4 &value) {
     }
 }
 
-bool Program::is_valid() const {
+bool Shader::is_valid() const {
     return id != 0;
 }
 

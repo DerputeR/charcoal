@@ -18,6 +18,6 @@ struct AppState {
     std::unique_ptr<Scene> scene;
     std::unique_ptr<GpuMesh> gpu_mesh;
     std::vector<GpuTexture> gpu_texture;
-    std::unique_ptr<Shader::Program> shader;
+    std::unique_ptr<Shader> shader;
 };
 } // namespace Charcoal
