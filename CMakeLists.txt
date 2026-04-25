@@ -94,6 +94,9 @@ set(ENGINE_SOURCES
     "src/engine/mesh.cpp"
     "src/engine/color.cpp"
     "src/engine/scene.cpp"
+    "src/engine/console/command.cpp"
+    "src/engine/console/convar.cpp"
+    "src/engine/console/console.cpp"
 )
 
 
