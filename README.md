@@ -37,6 +37,11 @@ This has not yet been tested on OSX, iOS, Web via Emscripten, or Android.
 # Build
 
 1. Setup all [build system dependencies](#build-system-dependencies) first
+    1. Your system may not have all the needed dependencies - check the console output and any mentioned logs in it if the build fails! Some examples:
+        1. `sudo apt-get install python3 python3-dev python3-venv`
+        2. `sudo apt install libx11-dev libxft-dev libxext-dev`
+        3. `sudo apt install libwayland-dev libxkbcommon-dev libegl1-mesa-dev`
+        4. `sudo apt install libibus-1.0-dev`
 2. Run one of the build scripts:
     1. `build.ps1` - Native build (preset=default)
     2. `build.sh` - Native build (preset=default)
