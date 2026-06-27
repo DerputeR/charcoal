@@ -25,6 +25,10 @@ Unless noted, libraries are handled by vcpkg.
 
 This project requires OpenGL 3.3 or greater.
 
+## Clang-format
+
+This project comes with a `.clang-format` file defined for versions >=18.1.0
+
 # Supported systems
 
 This project has been verified to build and run on:
